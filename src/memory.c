@@ -34,7 +34,7 @@ void pfree(void* mem) {
 	uint32_t ad = (uint32_t)mem;
 	ad -= pheap_begin;
 	ad /= 4096;
-	
+
 	pheap_desc[ad] = 0;
 	return;
 }
@@ -47,7 +47,7 @@ void* pmalloc(size_t size) {
 			continue;
 
 		pheap_desc[i] = 1;
-		
+
 		return (void *)(pheap_begin + i*4096);
 	}
 
@@ -96,7 +96,7 @@ void* malloc(size_t size) {
 		for(;;) {}
 		return 0;
 	}
-	
+
 	alloc_t *alloc = (alloc_t *)last_alloc;
 	alloc->status = 1;
 	alloc->size = size;
@@ -104,9 +104,15 @@ void* malloc(size_t size) {
 	last_alloc += size;
 	last_alloc += sizeof(alloc_t);
 	last_alloc += 4;
-	
+
 	memory_used += size + 4 + sizeof(alloc_t);
 	memset((char *)((uint32_t)alloc + sizeof(alloc_t)), 0, size);
-	
+
 	return (char *)((uint32_t)alloc + sizeof(alloc_t));
+}
+
+void* calloc(size_t num, size_t size) {
+	void* ptr = malloc(num * size);
+	memset(ptr, 0, num * size);
+	return ptr;
 }

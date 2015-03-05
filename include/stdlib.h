@@ -31,6 +31,7 @@ void free(void* mem);
 void pfree(void* mem);
 void* pmalloc(size_t size);
 void* malloc(size_t size);
+void* calloc(size_t num, size_t size);
 
 typedef struct {
 	uint8_t status;

@@ -4,71 +4,53 @@
 
 int keyState = 0; // keeping track of special chars.
 
-char* keyboardBuffer;
+typedef struct KeyPress {
+    char key;
+    bool pressed;
+} KeyPress;
+
+static KeyPress* keyBuffer;
+static unsigned int keyBufferLoc = 0;
+static unsigned int keyBufferReady = 0;
 
 void keyboard_handler(struct regs *r) {
     unsigned char scancode = inportb(0x60);
 
-    if (scancode & 0x80) {
-        int key = (keyState == 0) ? kbdus[scancode & ~0x80] : kbdus_s[scancode & ~0x80];
+    bool isDown = !(scancode & 0x80);
 
-        if ( key >= 0x80 ) {
-            switch ( key ) {
-                case 0x81:
-                    keyState = 0;
+    int key = (keyState == 0) ? kbdus[scancode & ~0x80] : kbdus_s[scancode & ~0x80];
 
-                default:
-                    return;
-            }
-        }
-
-        if ( key == '\b') {
-            return;
-        }
-        else {
-            if ( keyboardBuffer != 0) {
-                keyboardBuffer[1] = 0; // UP.
-            }
+    if ( key > 0x7F ) { // ASCII Range is 0x7F MAX
+        switch ( key ) {
+            case 0x81:
+                keyState = isDown;
+            default:
+                return;
         }
     }
     else {
-        int key = (keyState == 0) ? kbdus[scancode] : kbdus_s[scancode];
-
-        if ( key > 0x7F ) { // ASCII Range is 0x7F MAX
-            switch ( key ) {
-                case 0x81:
-                    keyState = 1;
-
-                default:
-                    return;
-            }
-
-            return;
-        }
-
-        // pressed
-        if ( keyboardBuffer != 0) {
-            keyboardBuffer[0] = (char) key;
-            keyboardBuffer[1] = 1; // DOWN.
+        if ( keyBuffer != 0) {
+            keyBuffer[keyBufferReady].key = (char)key;
+            keyBuffer[keyBufferReady++].pressed = isDown;
+            keyBufferReady = keyBufferReady % 1024;
         }
     }
 }
 
+
 char getchar( ) {
-    while ( keyboardBuffer[0] == 0 && keyboardBuffer[1] == 0);
+    while (keyBufferLoc == keyBufferReady);
 
-    free(keyboardBuffer); // i dont get it. doesnt work without this tho. probably fucks up memory a ton but w/e we'll fix it @ somepoint
+    // free(keyBuffer); // i dont get it. doesnt work without this tho. probably fucks up memory a ton but w/e we'll fix it @ somepoint
 
-    char output = keyboardBuffer[0];
-
-    keyboardBuffer[0] = 0;
-    keyboardBuffer[1] = 0;
+    char output = keyBuffer[keyBufferLoc++].key;
+    keyBufferLoc = keyBufferLoc % 1024;
 
     return output;
 }
 
 void cin(char* initial, char* output) {
-    if (initial) 
+    if (initial)
         puts(initial);
 
     if ( !output )
@@ -106,6 +88,6 @@ void cin(char* initial, char* output) {
 }
 
 void keyboard_install() {
-    keyboardBuffer = (char* )malloc(2);
+    keyBuffer = (KeyPress*)calloc(1024, sizeof(KeyPress));
     irq_install_handler(1, keyboard_handler);
 }
