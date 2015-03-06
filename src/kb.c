@@ -9,9 +9,9 @@ typedef struct KeyPress {
     bool pressed;
 } KeyPress;
 
-static KeyPress* keyBuffer;
-static unsigned int keyBufferLoc = 0;
-static unsigned int keyBufferReady = 0;
+KeyPress* keyBuffer;
+volatile unsigned int keyBufferLoc = 0;
+volatile unsigned int keyBufferReady = 0;
 
 void keyboard_handler(struct regs *r) {
     unsigned char scancode = inportb(0x60);
@@ -31,7 +31,8 @@ void keyboard_handler(struct regs *r) {
     else {
         if ( keyBuffer != 0) {
             keyBuffer[keyBufferReady].key = (char)key;
-            keyBuffer[keyBufferReady++].pressed = isDown;
+            keyBuffer[keyBufferReady].pressed = isDown;
+            keyBufferReady++;
             keyBufferReady = keyBufferReady % 1024;
         }
     }
@@ -39,14 +40,20 @@ void keyboard_handler(struct regs *r) {
 
 
 char getchar( ) {
-    while (keyBufferLoc == keyBufferReady);
+    while (true) {
+        if(keyBufferLoc == keyBufferReady)
+            continue;
 
-    // free(keyBuffer); // i dont get it. doesnt work without this tho. probably fucks up memory a ton but w/e we'll fix it @ somepoint
+        if(!keyBuffer[keyBufferLoc].pressed) {
+            keyBufferLoc = (keyBufferLoc + 1) % 1024;
+            continue;
+        }
 
-    char output = keyBuffer[keyBufferLoc++].key;
-    keyBufferLoc = keyBufferLoc % 1024;
+        char output = keyBuffer[keyBufferLoc++].key;
+        keyBufferLoc = keyBufferLoc % 1024;
 
-    return output;
+        return output;
+    }
 }
 
 void cin(char* initial, char* output) {
