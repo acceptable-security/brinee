@@ -19,7 +19,7 @@ void tasks_init() {
 void pit_handler() {
 	timer_handler();
 
-	puts("start of pit_handler\n");
+	// puts("start of pit_handler\n");
 
 	if(tasking) {
 		//puts("schedule call\n");
@@ -50,7 +50,7 @@ static inline uint8_t __pit_read_data (uint16_t counter) {
 static void pit_start_counter (uint32_t freq, uint8_t counter, uint8_t mode) {
 	if (freq==0)
 		return;
-	
+
 	uint16_t divisor = (uint16_t)( 1193181 / (uint16_t)freq);
 
 	// send operational command words

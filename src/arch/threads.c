@@ -42,9 +42,9 @@ void schedule() {
 	__asm__ volatile("nop");
 	__asm__ volatile("nop");
 	__asm__ volatile("nop");
-	puts("scheduling ");
-	puts(currentProcess->name);
-	puts("!\n");
+	// puts("scheduling ");
+	// puts(currentProcess->name);
+	// puts("!\n");
 	__asm__ volatile("push %eax");
 	__asm__ volatile("push %ebx");
 	__asm__ volatile("push %ecx");
@@ -73,7 +73,7 @@ void schedule() {
 	__asm__ volatile("pop %ecx");
 	__asm__ volatile("pop %ebx");
 	__asm__ volatile("pop %eax");
-	__asm__ volatile("iret");
+	__asm__ volatile("ret");
 	__asm__ volatile("nop");
 	__asm__ volatile("nop");
 	__asm__ volatile("nop");
@@ -108,21 +108,21 @@ void thread_kill(uint32_t pid) {
 	puts("threads_kill\n");
 	if(pid == 1)
 		return; // can't kill the idle!
-	
+
 	if(pid == currentProcess->pid)
 		threads_killcurrent();
 
 	process_t* orig = currentProcess;
 	process_t* proc = orig;
-	
+
 	while(1) {
 		if(proc->pid == pid) {
 			proc->state = PROCESS_STATE_ZOMBIE;
 			break;
 		}
-		
+
 		proc = proc->next;
-		
+
 		if(proc == orig)
 			break;
 	}
@@ -148,17 +148,17 @@ void threads_killcurrent() {
 		tasks_enable(0);
 		return;
 	}
-	
+
 	tasks_enable(0);
-	
+
 	free((void *)currentProcess->stacktop);
 	free(currentProcess);
-	
+
 	pfree(currentProcess->cr3);
-	
+
 	currentProcess->prev->next = currentProcess->next;
 	currentProcess->next->prev = currentProcess->prev;
-	
+
 	tasks_enable(1);
 	schedule_noirq();
 	__asm__ volatile("nop");
@@ -186,9 +186,9 @@ void task_cleaner() {
 	while(1) {
 		proc = proc->next;
 
-		if(proc == currentProcess) 
+		if(proc == currentProcess)
 			continue;
-		
+
 		if(proc->state == PROCESS_STATE_ZOMBIE) {
 			tasks_enable(0);
 
@@ -200,10 +200,10 @@ void task_cleaner() {
 
 			tasks_enable(1);
 		}
-		
+
 		if(proc == orig)
 			goto reset;
-		
+
 		schedule_noirq();
 	}
 
