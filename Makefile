@@ -6,20 +6,20 @@ CFLAGS = -Wall -O -m32 -fstrength-reduce -fomit-frame-pointer -ffreestanding  -f
 
 LFLAGS = -m32 -ffreestanding -O2 -nostdlib -lgcc
 
-C_SOURCES = $(strip $(wildcard src/*.c))
-C_OBJECTS = $(subst src/, ./, $(C_SOURCES:.c=.o))
+C_SOURCES = $(wildcard src/*/*.c) $(wildcard src/*.c)
+C_OBJECTS = $(C_SOURCES:.c=.o)
 
-ASM_SOURCES = $(strip $(wildcard src/core/*.asm))
-ASM_OBJECTS = $(subst src/core/,./,$(ASM_SOURCES:.asm=_internal.o))
+ASM_SOURCES = $(wildcard src/core/*.asm)
+ASM_OBJECTS = $(ASM_SOURCES:.asm=.o)
 
 kernel.bin: $(C_OBJECTS) $(ASM_OBJECTS)
 	gcc $(LFLAGS) -T link.ld -o kernel.bin $(ASM_OBJECTS) $(C_OBJECTS)
 
 $(C_OBJECTS):
-	$(CC) $(CFLAGS) $(subst .o,.c, src/$@) -o $@
+	$(CC) $(CFLAGS) $(subst .o,.c,$@) -o $@
 
 $(ASM_OBJECTS):
-	$(ASM) $(ASMFLAGS) $(subst .o,,$(subst _internal,,src/core/$@)).asm -o $@
+	$(ASM) $(ASMFLAGS) $(subst .o,.asm,$@) -o $@
 
 clean:
-	rm -f *.o kernel.bin
+	rm -f $(C_OBJECTS) $(ASM_OBJECTS) kernel.bin

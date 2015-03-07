@@ -1,5 +1,8 @@
+typedef int size_t;
+
 // STDBOOL
 typedef int bool;
+
 #define true 1
 #define false 0
 

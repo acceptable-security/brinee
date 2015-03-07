@@ -1,6 +1,10 @@
 #include <system.h>
 #include <stdlib.h>
 
+extern void pic_install();
+extern void pit_install();
+extern void threads_install();
+
 extern uint32_t kernel_end; // end of the kernel
 
 // This is the most important part of kernel.
@@ -26,20 +30,29 @@ void main() {
     memory_install((uint32_t)&kernel_end);
  
     // INTIALIZE INTERUPT SERVICES
+    init_video();
     gdt_install();
     idt_install();
     isrs_install();
     irq_install();
-
-    // INITIALIZE PEREPHERALS
-    init_video();
-    timer_install();
-    keyboard_install();
-    
+    pit_install();
     // ENABLE INTERRUPTS
-    __asm__ __volatile__ ("sti");
 
-    // DISPLAY THE FLAN!
+    __asm__ volatile ("sti");
+
+    threads_install();
+
+    puts("Uh, this shouldn't be here!");
+    for(;;) {}
+}
+
+void load_userspace() {
+    int i;
+    // INITIALIZE PEREPHERALS
+    
+    keyboard_install();
+
+      // DISPLAY THE FLAN!
     for (i = 0; i < 4; i++ ) {
         puts(flan[i]);
         putch('\n');
@@ -70,4 +83,5 @@ void main() {
 
     puts("What? We aint good 'nuff fo ya?\n");
     puts("Well go FUCK YOURSELF\n");
+    
 }

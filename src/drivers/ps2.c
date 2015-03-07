@@ -10,7 +10,7 @@ typedef struct KeyPress {
 } KeyPress;
 
 KeyPress* keyBuffer;
-unsigned int keyBufferLoc = 0;
+volatile unsigned int keyBufferLoc = 0;
 volatile unsigned int keyBufferReady = 0;
 
 void keyboard_handler(struct regs *r) {
