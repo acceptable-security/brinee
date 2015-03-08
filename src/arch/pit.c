@@ -16,14 +16,14 @@ void tasks_init() {
 	tasking = 1;
 }
 
-void pit_handler() {
+void pit_handler(struct regs *r) {
 	timer_handler();
 
 	// puts("start of pit_handler\n");
 
 	if(tasking) {
-		//puts("schedule call\n");
-		schedule();
+		// puts("schedule call\n");
+		schedule(r);
 	}
 
 	//puts("end of pit_handler\n");

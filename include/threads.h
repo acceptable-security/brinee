@@ -1,3 +1,4 @@
+#include <system.h>
 #include <stdlib.h>
 
 #define PROCESS_STATE_ALIVE 0
@@ -16,9 +17,12 @@ struct process {
 	uint32_t eip;
 	uint32_t cr3;
 	uint32_t state;
-	
+
 	void (*notify)(int);
 	struct process* next;
+
+	struct regs r;
+	bool started;
 };
 
 typedef struct process process_t;

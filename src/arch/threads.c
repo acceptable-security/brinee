@@ -15,6 +15,10 @@ void task_idle() {
 	if ( !tasks_enabled ) {
 		tasks_init();
 		tasks_enabled = 1;
+		// int i;
+		// for(i = 0; i < 1000; i++) { puts("a\n"); }
+		// while(1) { timer_wait(18); puts("b"); }
+		// while(1);
 		load_userspace();
 	}
 	__asm__ volatile("nop");
@@ -38,45 +42,54 @@ void task_example() {
 	// }
 }
 
-void schedule() {
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	// puts("scheduling ");
-	// puts(currentProcess->name);
-	// puts("!\n");
-	__asm__ volatile("push %eax");
-	__asm__ volatile("push %ebx");
-	__asm__ volatile("push %ecx");
-	__asm__ volatile("push %edx");
-	__asm__ volatile("push %esi");
-	__asm__ volatile("push %edi");
-	__asm__ volatile("push %ebp");
-	__asm__ volatile("push %ds");
-	__asm__ volatile("push %es");
-	__asm__ volatile("push %fs");
-	__asm__ volatile("nop");
-	__asm__ volatile("push %gs");
-	__asm__ volatile("mov %%esp, %%eax":"=a"(currentProcess->esp));
+// void schedule() {
+// 	// __asm__ volatile("nop");
+// 	// __asm__ volatile("nop");
+// 	// __asm__ volatile("nop");
+// 	// puts("scheduling ");
+// 	// puts(currentProcess->name);
+// 	// puts("!\n");
+//
+// 	// __asm__ volatile("push %eax");
+// 	// __asm__ volatile("push %ebx");
+// 	// __asm__ volatile("push %ecx");
+// 	// __asm__ volatile("push %edx");
+// 	// __asm__ volatile("push %esi");
+// 	// __asm__ volatile("push %edi");
+// 	// __asm__ volatile("push %ebp");
+// 	// __asm__ volatile("push %ds");
+// 	// __asm__ volatile("push %es");
+// 	// __asm__ volatile("push %fs");
+// 	// __asm__ volatile("push %gs");
+// 	// __asm__ volatile("mov %%esp, %%eax":"=a"(currentProcess->esp));
+// 	// currentProcess = currentProcess->next;
+// 	// __asm__ volatile("mov %%eax, %%cr3": :"a"(currentProcess->cr3));
+// 	// __asm__ volatile("mov %%eax, %%esp": :"a"(currentProcess->esp));
+// 	// __asm__ volatile("pop %gs");
+// 	// __asm__ volatile("pop %fs");
+// 	// __asm__ volatile("pop %es");
+// 	// __asm__ volatile("pop %ds");
+// 	// __asm__ volatile("pop %ebp");
+// 	// __asm__ volatile("pop %edi");
+// 	// __asm__ volatile("pop %esi");
+// 	// __asm__ volatile("out %%al, %%dx": :"d"(0x20), "a"(0x20)); // send EoI to master PIC
+// 	// __asm__ volatile("pop %edx");
+// 	// __asm__ volatile("pop %ecx");
+// 	// __asm__ volatile("pop %ebx");
+// 	// __asm__ volatile("pop %eax");
+// 	// __asm__ volatile("ret");
+//
+// 	// __asm__ volatile("nop");
+// 	// __asm__ volatile("nop");
+// 	// __asm__ volatile("nop");
+// }
+
+void threads_start();
+
+void schedule(struct regs *r) {
+	currentProcess->r = *r;
 	currentProcess = currentProcess->next;
-	__asm__ volatile("mov %%eax, %%cr3": :"a"(currentProcess->cr3));
-	__asm__ volatile("mov %%eax, %%esp": :"a"(currentProcess->esp));
-	__asm__ volatile("pop %gs");
-	__asm__ volatile("pop %fs");
-	__asm__ volatile("pop %es");
-	__asm__ volatile("pop %ds");
-	__asm__ volatile("pop %ebp");
-	__asm__ volatile("pop %edi");
-	__asm__ volatile("pop %esi");
-	__asm__ volatile("out %%al, %%dx": :"d"(0x20), "a"(0x20)); // send EoI to master PIC
-	__asm__ volatile("pop %edx");
-	__asm__ volatile("pop %ecx");
-	__asm__ volatile("pop %ebx");
-	__asm__ volatile("pop %eax");
-	__asm__ volatile("ret");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
+	*r = currentProcess->r;
 }
 
 void schedule_noirq() {
@@ -228,7 +241,25 @@ process_t* thread_new(char* name, uint32_t addr) {
 	proc->eip = addr;
 	proc->state = PROCESS_STATE_ALIVE;
 	// notify?
-	proc->esp = (uint32_t) malloc(4096);
+	proc->esp = (uint32_t) malloc(4096) + 4096;
+
+	proc->r.eflags = 0x00000202;
+	proc->r.cs = 0x8;
+	proc->r.eip = (uint32_t)addr;
+	proc->r.eax = 0;
+	proc->r.ebx = 0;
+	proc->r.ecx = 0;
+	proc->r.edx = 0;
+	proc->r.esi = 0;
+	proc->r.edi = 0;
+	proc->r.ebp = proc->esp;
+	proc->r.useresp = proc->esp;
+	proc->r.ds = 0x10;
+	proc->r.fs = 0x10;
+	proc->r.es = 0x10;
+	proc->r.gs = 0x10;
+	proc->started = false;
+
 
 	__asm__ volatile("mov %%cr3, %%eax":"=a"(proc->cr3));
 
@@ -270,19 +301,28 @@ int thread_add(process_t* proc) {
 }
 
 void threads_start() {
-	__asm__ volatile("mov %%eax, %%esp": :"a"(currentProcess->esp));
-	__asm__ volatile("pop %gs");
-	__asm__ volatile("pop %fs");
-	__asm__ volatile("pop %es");
-	__asm__ volatile("pop %ds");
-	__asm__ volatile("pop %ebp");
-	__asm__ volatile("pop %edi");
-	__asm__ volatile("pop %esi");
-	__asm__ volatile("pop %edx");
-	__asm__ volatile("pop %ecx");
-	__asm__ volatile("pop %ebx");
-	__asm__ volatile("pop %eax");
-	__asm__ volatile("iret");
+	currentProcess->started = true;
+	((void (*)())(currentProcess->eip))();
+	// __asm__ volatile("mov %%eax, %%esp": :"a"(currentProcess->esp));
+	// __asm__ volatile("pop %gs");
+	// __asm__ volatile("pop %fs");
+	// __asm__ volatile("pop %es");
+	// __asm__ volatile("pop %ds");
+	// __asm__ volatile("pop %ebp");
+	// __asm__ volatile("pop %edi");
+	// __asm__ volatile("pop %esi");
+	// __asm__ volatile("pop %edx");
+	// __asm__ volatile("pop %ecx");
+	// __asm__ volatile("pop %ebx");
+	// __asm__ volatile("pop %eax");
+	// __asm__ volatile("iret");
+}
+
+void task_test() {
+	puts("boop\n");
+	int i;
+	// for(i = 0; i < 1000; i++) { puts("a\n"); }
+	while(1);
 }
 
 void threads_install() {
@@ -290,8 +330,10 @@ void threads_install() {
 	tasks_enabled = 0;
 
 	currentProcess = thread_new("idle", (uint32_t)task_idle);
-	currentProcess->next = currentProcess;
-	currentProcess->prev = currentProcess;
+	currentProcess->next = thread_new("test", (uint32_t)task_test);
+	currentProcess->prev = currentProcess->next;
+	currentProcess->next->next = currentProcess;
+	currentProcess->next->prev = currentProcess;
 
 	// thread_add_newenv(thread_new("task_showinit", (uint32_t)task_showinit)); // idle task
 	// thread_add_newenv(thread_new("task_cleaner", (uint32_t)task_cleaner)); // task cleaner
