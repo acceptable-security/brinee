@@ -1,4 +1,5 @@
 #include <system.h>
+#include <idt.h>
 #include <stdlib.h>
 
 /* Defines an IDT entry */
@@ -10,15 +11,11 @@ struct idt_entry {
     unsigned short base_hi;
 } __attribute__((packed));
 
-struct idt_ptr {
-    unsigned short limit;
-    unsigned int base;
-} __attribute__((packed));
-
 struct idt_entry idt[256];
-struct idt_ptr idtp;
 
-extern void idt_load();
+void idt_empty_entry() {
+    __asm__ volatile("iretl");
+}
 
 void idt_set_gate(unsigned char num, unsigned long base, unsigned short sel, unsigned char flags) {
     idt[num].base_lo = (base & 0xFFFF);
@@ -29,11 +26,28 @@ void idt_set_gate(unsigned char num, unsigned long base, unsigned short sel, uns
     idt[num].flags = flags;
 }
 
+inline int idt_enabled() {
+    unsigned long flags;
+    asm volatile ( "pushf\n\t"
+                   "pop %0"
+                   : "=g"(flags) );
+    return flags & (1 << 9);
+}
+
 void idt_install() {
+    int i;
+
+    struct {
+        unsigned short limit;
+        unsigned int base;
+    } __attribute__((packed)) idtp;
+
     idtp.limit = (sizeof (struct idt_entry) * 256) - 1;
     idtp.base = (unsigned int)&idt;
 
-    memset(&idt, 0, sizeof(struct idt_entry) * 256);
+    for ( i = 0; i < 256; i++ ) {
+        idt_set_gate(i, (unsigned) idt_empty_entry, 0x08, 0x8E);
+    }
 
-    idt_load();
+    __asm__ ( "lidt (%0)" : : "g"(&idtp) );
 }

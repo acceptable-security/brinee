@@ -2,7 +2,7 @@
 
 int timer_ticks = 0;
 
-void timer_handler(struct regs *r) {
+void timer_handler() {
     timer_ticks++;
 
     // Every 18.222 cycles is one second.

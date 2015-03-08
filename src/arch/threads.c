@@ -6,83 +6,31 @@ uint32_t lpid;
 int tasks_enabled;
 
 void task_idle() {
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-
 	puts("task_idle\n");
 	if ( !tasks_enabled ) {
 		tasks_init();
+		
 		tasks_enabled = 1;
-		// int i;
-		// for(i = 0; i < 1000; i++) { puts("a\n"); }
-		// while(1) { timer_wait(18); puts("b"); }
-		// while(1);
+
 		load_userspace();
 	}
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
 }
 
 void task_showinit() {
-	__asm__ volatile("nop");
-	// puts("Tasking initialized...\n");
-	// threads_killcurrent();
+	puts("Tasking initialized...\n");
+	threads_killcurrent();
 }
 
 void task_example() {
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	// while(1) {
-	// 	puts("Weird\n");
-	// 	timer_wait(18);
-	// }
-}
+	int cnt = 0;
 
-// void schedule() {
-// 	// __asm__ volatile("nop");
-// 	// __asm__ volatile("nop");
-// 	// __asm__ volatile("nop");
-// 	// puts("scheduling ");
-// 	// puts(currentProcess->name);
-// 	// puts("!\n");
-//
-// 	// __asm__ volatile("push %eax");
-// 	// __asm__ volatile("push %ebx");
-// 	// __asm__ volatile("push %ecx");
-// 	// __asm__ volatile("push %edx");
-// 	// __asm__ volatile("push %esi");
-// 	// __asm__ volatile("push %edi");
-// 	// __asm__ volatile("push %ebp");
-// 	// __asm__ volatile("push %ds");
-// 	// __asm__ volatile("push %es");
-// 	// __asm__ volatile("push %fs");
-// 	// __asm__ volatile("push %gs");
-// 	// __asm__ volatile("mov %%esp, %%eax":"=a"(currentProcess->esp));
-// 	// currentProcess = currentProcess->next;
-// 	// __asm__ volatile("mov %%eax, %%cr3": :"a"(currentProcess->cr3));
-// 	// __asm__ volatile("mov %%eax, %%esp": :"a"(currentProcess->esp));
-// 	// __asm__ volatile("pop %gs");
-// 	// __asm__ volatile("pop %fs");
-// 	// __asm__ volatile("pop %es");
-// 	// __asm__ volatile("pop %ds");
-// 	// __asm__ volatile("pop %ebp");
-// 	// __asm__ volatile("pop %edi");
-// 	// __asm__ volatile("pop %esi");
-// 	// __asm__ volatile("out %%al, %%dx": :"d"(0x20), "a"(0x20)); // send EoI to master PIC
-// 	// __asm__ volatile("pop %edx");
-// 	// __asm__ volatile("pop %ecx");
-// 	// __asm__ volatile("pop %ebx");
-// 	// __asm__ volatile("pop %eax");
-// 	// __asm__ volatile("ret");
-//
-// 	// __asm__ volatile("nop");
-// 	// __asm__ volatile("nop");
-// 	// __asm__ volatile("nop");
-// }
+	while(1) {
+		if ( cnt % 30 )
+			puts("Weird\n");
+		
+		cnt ++;
+	}
+}
 
 void threads_start();
 
@@ -93,31 +41,13 @@ void schedule(struct regs *r) {
 }
 
 void schedule_noirq() {
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
 	if(!tasks_enabled)
 		return;
 
 	__asm__ volatile("int $0x2e");
-	return;
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
 }
 
 void thread_kill(uint32_t pid) {
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-
 	puts("threads_kill\n");
 	if(pid == 1)
 		return; // can't kill the idle!
@@ -139,24 +69,9 @@ void thread_kill(uint32_t pid) {
 		if(proc == orig)
 			break;
 	}
-
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
 }
 
 void threads_killcurrent() {
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-
 	if(currentProcess->pid == 1) {
 		tasks_enable(0);
 		return;
@@ -174,25 +89,10 @@ void threads_killcurrent() {
 
 	tasks_enable(1);
 	schedule_noirq();
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
 }
 
 void task_cleaner() {
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-
+	puts("it's killin time :^)");
 	reset:;
 	process_t *orig = currentProcess;
 	process_t *proc = orig;
@@ -219,15 +119,6 @@ void task_cleaner() {
 
 		schedule_noirq();
 	}
-
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
-	__asm__ volatile("nop");
 }
 
 process_t* thread_new(char* name, uint32_t addr) {
@@ -289,6 +180,7 @@ void thread_add_newenv(process_t* proc) {
 	proc->next = currentProcess->next;
 	proc->next->prev = proc;
 	proc->prev = currentProcess;
+
 	currentProcess->next = proc;
 }
 
@@ -303,19 +195,6 @@ int thread_add(process_t* proc) {
 void threads_start() {
 	currentProcess->started = true;
 	((void (*)())(currentProcess->eip))();
-	// __asm__ volatile("mov %%eax, %%esp": :"a"(currentProcess->esp));
-	// __asm__ volatile("pop %gs");
-	// __asm__ volatile("pop %fs");
-	// __asm__ volatile("pop %es");
-	// __asm__ volatile("pop %ds");
-	// __asm__ volatile("pop %ebp");
-	// __asm__ volatile("pop %edi");
-	// __asm__ volatile("pop %esi");
-	// __asm__ volatile("pop %edx");
-	// __asm__ volatile("pop %ecx");
-	// __asm__ volatile("pop %ebx");
-	// __asm__ volatile("pop %eax");
-	// __asm__ volatile("iret");
 }
 
 void task_test() {
@@ -330,14 +209,15 @@ void threads_install() {
 	tasks_enabled = 0;
 
 	currentProcess = thread_new("idle", (uint32_t)task_idle);
-	currentProcess->next = thread_new("test", (uint32_t)task_test);
-	currentProcess->prev = currentProcess->next;
-	currentProcess->next->next = currentProcess;
-	currentProcess->next->prev = currentProcess;
+	currentProcess->next = currentProcess;
+	currentProcess->prev = currentProcess;
 
-	// thread_add_newenv(thread_new("task_showinit", (uint32_t)task_showinit)); // idle task
-	// thread_add_newenv(thread_new("task_cleaner", (uint32_t)task_cleaner)); // task cleaner
+	thread_add_newenv(thread_new("test", (uint32_t)task_test));
+	
+	thread_add_newenv(thread_new("task_cleaner", (uint32_t)task_cleaner)); // task cleaner
 	// thread_add_newenv(thread_new("task_example", (uint32_t)task_example)); // example
+
+	irq_install_handler(8, schedule);
 
 	threads_start();
 }

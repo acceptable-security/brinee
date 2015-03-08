@@ -40,6 +40,8 @@ void main() {
 
     __asm__ volatile ("sti");
 
+    // load_userspace();
+
     threads_install();
 
     puts("Uh, this shouldn't be here!");
@@ -60,7 +62,7 @@ void load_userspace() {
 
     puts("Welcome to the Brine Kernlee :)) pls hv flan\n");
 
-    
+    i = 0 / 0;
 
     while (1) {
         char* output = ( char* ) malloc(128);

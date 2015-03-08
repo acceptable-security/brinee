@@ -13,7 +13,7 @@ KeyPress* keyBuffer;
 volatile unsigned int keyBufferLoc = 0;
 volatile unsigned int keyBufferReady = 0;
 
-void keyboard_handler(struct regs *r) {
+void keyboard_handler() {
     unsigned char scancode = inportb(0x60);
 
     bool isDown = !(scancode & 0x80);
@@ -24,8 +24,6 @@ void keyboard_handler(struct regs *r) {
         switch ( key ) {
             case 0x81:
                 keyState = isDown;
-            default:
-                return;
         }
     }
     else {

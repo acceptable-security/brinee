@@ -16,6 +16,7 @@ void tasks_init() {
 	tasking = 1;
 }
 
+
 void pit_handler(struct regs *r) {
 	timer_handler();
 
@@ -28,6 +29,7 @@ void pit_handler(struct regs *r) {
 
 	//puts("end of pit_handler\n");
 }
+
 
 static inline void __pit_send_cmd(uint8_t cmd) {
 	outportb(PIT_REG_COMMAND, cmd);
