@@ -128,10 +128,9 @@ process_t* thread_new(char* name, uint32_t addr) {
 
 	proc->name = name;
 	proc->pid = ++lpid;
-	proc->eip = addr;
 	proc->state = PROCESS_STATE_ALIVE;
 	// notify?
-	proc->esp = (uint32_t) malloc(4096) + 4096;
+	proc->r.useresp = (uint32_t) malloc(4096) + 4096;
 
 	proc->r.eflags = 0x00000202;
 	proc->r.cs = 0x8;
@@ -142,8 +141,8 @@ process_t* thread_new(char* name, uint32_t addr) {
 	proc->r.edx = 0;
 	proc->r.esi = 0;
 	proc->r.edi = 0;
-	proc->r.ebp = proc->esp;
-	proc->r.useresp = proc->esp;
+	proc->r.ebp = proc->r.useresp;
+	// proc->r.useresp = proc->r.useresp;
 	proc->r.ds = 0x10;
 	proc->r.fs = 0x10;
 	proc->r.es = 0x10;
@@ -153,23 +152,23 @@ process_t* thread_new(char* name, uint32_t addr) {
 
 	__asm__ volatile("mov %%cr3, %%eax":"=a"(proc->cr3));
 
-	uint32_t* stack = (uint32_t *) (proc->esp + 4096);
-	proc->stacktop = proc->esp;
-	*--stack = 0x00000202;       // eflags
-	*--stack = 0x8;              // cs
-	*--stack = (uint32_t)addr;   // eip
-	*--stack = 0;                // eax
-	*--stack = 0;                // ebx
-	*--stack = 0;                // ecx
-	*--stack = 0;                // edx
-	*--stack = 0;                // esi
-	*--stack = 0;                // edi
-	*--stack = proc->esp + 4096; // ebp
-	*--stack = 0x10;             //  ds
-	*--stack = 0x10;             //  fs
-	*--stack = 0x10;             //  es
-	*--stack = 0x10;             //  gs
-	proc->esp = (uint32_t) stack;
+	// uint32_t* stack = (uint32_t *) (proc->r.useresp);
+	// proc->stacktop = proc->r.useresp - 4096;
+	// *--stack = 0x00000202;       // eflags
+	// *--stack = 0x8;              // cs
+	// *--stack = (uint32_t)addr;   // eip
+	// *--stack = 0;                // eax
+	// *--stack = 0;                // ebx
+	// *--stack = 0;                // ecx
+	// *--stack = 0;                // edx
+	// *--stack = 0;                // esi
+	// *--stack = 0;                // edi
+	// *--stack = proc->r.useresp; // ebp
+	// *--stack = 0x10;             //  ds
+	// *--stack = 0x10;             //  fs
+	// *--stack = 0x10;             //  es
+	// *--stack = 0x10;             //  gs
+	// proc->r.useresp = (uint32_t) stack;
 
 	return proc;
 }
@@ -193,7 +192,7 @@ int thread_add(process_t* proc) {
 
 void threads_start() {
 	currentProcess->started = true;
-	((void (*)())(currentProcess->eip))();
+	((void (*)())(currentProcess->r.eip))();
 }
 
 void task_test() {
