@@ -7,14 +7,13 @@ int tasks_enabled;
 
 void task_idle() {
 	puts("task_idle\n");
-	// if ( !tasks_enabled ) {
-	// 	tasks_init();
-	//
-	// 	tasks_enabled = 1;
-	//
-	// 	load_userspace();
-	// }
-	load_userspace();
+	if ( !tasks_enabled ) {
+		tasks_init();
+
+		tasks_enabled = 1;
+
+		load_userspace();
+	}
 }
 
 void task_showinit() {
@@ -34,9 +33,20 @@ void task_example() {
 }
 
 void schedule(struct regs *r) {
-	currentProcess->r = *r;
+	currentProcess->esp = r;
 	currentProcess = currentProcess->next;
-	*r = currentProcess->r;
+	__asm__ volatile("mov %0, %%esp;"
+			 "pop %%gs;"
+			 "pop %%fs;"
+			 "pop %%es;"
+			 "pop %%ds;"
+			 "mov $0x20, %%al;"
+			 "mov $0x20, %%dx;"
+			 "outb %%al, %%dx;"
+			 "popa;"
+			 "add $0x8, %%esp;"
+			 "iret"
+			 : :"r"(currentProcess->esp));
 }
 
 void schedule_noirq() {
@@ -130,45 +140,33 @@ process_t* thread_new(char* name, uint32_t addr) {
 	proc->pid = ++lpid;
 	proc->state = PROCESS_STATE_ALIVE;
 	// notify?
-	proc->r.useresp = (uint32_t) malloc(4096) + 4096;
 
-	proc->r.eflags = 0x00000202;
-	proc->r.cs = 0x8;
-	proc->r.eip = (uint32_t)addr;
-	proc->r.eax = 0;
-	proc->r.ebx = 0;
-	proc->r.ecx = 0;
-	proc->r.edx = 0;
-	proc->r.esi = 0;
-	proc->r.edi = 0;
-	proc->r.ebp = proc->r.useresp;
-	// proc->r.useresp = proc->r.useresp;
-	proc->r.ds = 0x10;
-	proc->r.fs = 0x10;
-	proc->r.es = 0x10;
-	proc->r.gs = 0x10;
+	proc->esp = (uint32_t) malloc(4096) + 4096;
+	uint32_t stacktop = proc->esp;
+
+	proc->esp -= sizeof(struct regs);
+
+	struct regs *r = proc->esp;
+
+	r->eflags = 0x00000202;
+	r->cs = 0x8;
+	r->eip = (uint32_t)addr;
+	r->eax = 0;
+	r->ebx = 0;
+	r->ecx = 0;
+	r->edx = 0;
+	r->esi = 0;
+	r->edi = 0;
+	r->ebp = stacktop;
+	r->useresp = 0xDEADBEEF;
+	r->ds = 0x10;
+	r->fs = 0x10;
+	r->es = 0x10;
+	r->gs = 0x10;
 	proc->started = false;
 
 
 	__asm__ volatile("mov %%cr3, %%eax":"=a"(proc->cr3));
-
-	// uint32_t* stack = (uint32_t *) (proc->r.useresp);
-	// proc->stacktop = proc->r.useresp - 4096;
-	// *--stack = 0x00000202;       // eflags
-	// *--stack = 0x8;              // cs
-	// *--stack = (uint32_t)addr;   // eip
-	// *--stack = 0;                // eax
-	// *--stack = 0;                // ebx
-	// *--stack = 0;                // ecx
-	// *--stack = 0;                // edx
-	// *--stack = 0;                // esi
-	// *--stack = 0;                // edi
-	// *--stack = proc->r.useresp; // ebp
-	// *--stack = 0x10;             //  ds
-	// *--stack = 0x10;             //  fs
-	// *--stack = 0x10;             //  es
-	// *--stack = 0x10;             //  gs
-	// proc->r.useresp = (uint32_t) stack;
 
 	return proc;
 }
@@ -191,13 +189,22 @@ int thread_add(process_t* proc) {
 }
 
 void threads_start() {
-	currentProcess->started = true;
-	((void (*)())(currentProcess->r.eip))();
+	// currentProcess->started = true;
+	__asm__ volatile("mov %0, %%esp;"
+			 "pop %%gs;"
+			 "pop %%fs;"
+			 "pop %%es;"
+			 "pop %%ds;"
+			 "mov $0x20, %%al;"
+			 "mov $0x20, %%dx;"
+			 "outb %%al, %%dx;"
+			 "popa;"
+			 "add $0x8, %%esp;"
+			 "iret"
+			 : :"r"(currentProcess->esp));
 }
 
 void task_test() {
-	tasks_init();
-	tasks_enabled = 1;
 	puts("boop\n");
 	while(1);
 }
@@ -210,11 +217,11 @@ void threads_install() {
 	lpid = 0;
 	tasks_enabled = 0;
 
-	currentProcess = thread_new("test", (uint32_t)task_test);
+	currentProcess = thread_new("idle", (uint32_t)task_idle);
 	currentProcess->next = currentProcess;
 	currentProcess->prev = currentProcess;
 
-	thread_add_newenv(thread_new("idle", (uint32_t)task_idle));
+	thread_add_newenv(thread_new("test", (uint32_t)task_test));
 
 	thread_add_newenv(thread_new("task_cleaner", (uint32_t)task_cleaner)); // task cleaner
 	// thread_add_newenv(thread_new("task_example", (uint32_t)task_example)); // example

@@ -12,7 +12,7 @@ struct process {
 	char* name;
 
 	uint32_t pid;
-	// uint32_t esp;
+	uint32_t esp;
 	uint32_t stacktop;
 	// uint32_t eip;
 	uint32_t cr3;
@@ -21,7 +21,7 @@ struct process {
 	void (*notify)(int);
 	struct process* next;
 
-	struct regs r;
+	// struct regs r;
 	bool started;
 };
 
