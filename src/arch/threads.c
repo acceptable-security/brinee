@@ -7,13 +7,14 @@ int tasks_enabled;
 
 void task_idle() {
 	puts("task_idle\n");
-	if ( !tasks_enabled ) {
-		tasks_init();
-		
-		tasks_enabled = 1;
-
-		load_userspace();
-	}
+	// if ( !tasks_enabled ) {
+	// 	tasks_init();
+	//
+	// 	tasks_enabled = 1;
+	//
+	// 	load_userspace();
+	// }
+	load_userspace();
 }
 
 void task_showinit() {
@@ -27,12 +28,10 @@ void task_example() {
 	while(1) {
 		if ( cnt % 30 )
 			puts("Weird\n");
-		
+
 		cnt ++;
 	}
 }
-
-void threads_start();
 
 void schedule(struct regs *r) {
 	currentProcess->r = *r;
@@ -198,9 +197,13 @@ void threads_start() {
 }
 
 void task_test() {
+	tasks_init();
+	tasks_enabled = 1;
 	puts("boop\n");
-	int i;
-	// for(i = 0; i < 1000; i++) { puts("a\n"); }
+	while(1);
+}
+
+void task_filler() {
 	while(1);
 }
 
@@ -208,16 +211,15 @@ void threads_install() {
 	lpid = 0;
 	tasks_enabled = 0;
 
-	currentProcess = thread_new("idle", (uint32_t)task_idle);
+	currentProcess = thread_new("test", (uint32_t)task_test);
 	currentProcess->next = currentProcess;
 	currentProcess->prev = currentProcess;
 
-	thread_add_newenv(thread_new("test", (uint32_t)task_test));
-	
+	thread_add_newenv(thread_new("idle", (uint32_t)task_idle));
+
 	thread_add_newenv(thread_new("task_cleaner", (uint32_t)task_cleaner)); // task cleaner
 	// thread_add_newenv(thread_new("task_example", (uint32_t)task_example)); // example
 
 	irq_install_handler(8, schedule);
-
 	threads_start();
 }
