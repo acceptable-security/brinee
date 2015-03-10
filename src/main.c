@@ -5,7 +5,7 @@ extern void pic_install();
 extern void pit_install();
 extern void threads_install();
 
-extern uint32_t kernel_end; // end of the kernel
+extern uint32_t _end; // end of the kernel
 
 // This is the most important part of kernel.
 // This is so vital to the computer
@@ -25,10 +25,10 @@ char *flan[4] = {
 
 void main() {
     int i;
- 
-    // INITIALIZE HEAP  
-    memory_install((uint32_t)&kernel_end);
- 
+
+    // INITIALIZE HEAP
+    memory_install((uint32_t)&_end);
+
     // INTIALIZE INTERUPT SERVICES
     init_video();
     gdt_install();
@@ -40,9 +40,9 @@ void main() {
 
     __asm__ volatile ("sti");
 
-    // load_userspace();
+    load_userspace();
 
-    threads_install();
+    // threads_install();
 
     puts("Uh, this shouldn't be here!");
     for(;;) {}
@@ -51,7 +51,7 @@ void main() {
 void load_userspace() {
     int i;
     // INITIALIZE PEREPHERALS
-    
+
     keyboard_install();
 
       // DISPLAY THE FLAN!
@@ -85,5 +85,5 @@ void load_userspace() {
 
     puts("What? We aint good 'nuff fo ya?\n");
     puts("Well go FUCK YOURSELF\n");
-    
+
 }

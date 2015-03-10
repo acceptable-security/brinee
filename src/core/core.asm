@@ -1,7 +1,7 @@
-[BITS 32]
+[BITS 64]
 global start
 start:
-    mov esp, sys_stack 
+    mov esp, sys_stack
     jmp stublet
 
 ; Keep this or fuck off.
@@ -14,17 +14,17 @@ mboot:
     MULTIBOOT_HEADER_MAGIC	equ 0x1BADB002
     MULTIBOOT_HEADER_FLAGS	equ MULTIBOOT_PAGE_ALIGN | MULTIBOOT_MEMORY_INFO | MULTIBOOT_AOUT_KLUDGE
     MULTIBOOT_CHECKSUM	equ -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
-    EXTERN code, bss, kernel_end
+    EXTERN code, bss, _end
 
     ; This is the GRUB Multiboot header. A boot signature
     dd MULTIBOOT_HEADER_MAGIC
     dd MULTIBOOT_HEADER_FLAGS
     dd MULTIBOOT_CHECKSUM
-    
+
     dd mboot
     dd code
     dd bss
-    dd kernel_end
+    dd _end
     dd start
 
 stublet:

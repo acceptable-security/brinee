@@ -1,10 +1,10 @@
 ASM = nasm
-ASMFLAGS = -f elf
+ASMFLAGS = -f elf64
 
 CC = cc
-CFLAGS = -Wall -O -m32 -fstrength-reduce -fomit-frame-pointer -ffreestanding  -finline-functions -nostdinc -fno-builtin -Iinclude/ -c -g
+CFLAGS = -Wall -O -fstrength-reduce -fomit-frame-pointer -ffreestanding  -finline-functions -nostdinc -fno-builtin -Iinclude/ -c -g
 
-LFLAGS = -m32 -ffreestanding -O2 -nostdlib -lgcc -g
+LFLAGS = -ffreestanding -O2 -nostdlib -lgcc -g
 
 C_SOURCES = $(wildcard src/*/*.c) $(wildcard src/*.c)
 C_OBJECTS = $(C_SOURCES:.c=.o)

@@ -23,7 +23,7 @@ typedef struct process_t {
 	bool started;
 } process_t;
 
-process_t* thread_new(char* name, uint32_t addr);
+process_t* thread_new(char* name, void(*addr)());
 void threads_install();
 int thread_add(process_t* proc);
 

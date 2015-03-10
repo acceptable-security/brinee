@@ -11,8 +11,8 @@ uint32_t pheap_end = 0;
 uint8_t *pheap_desc = 0;
 uint32_t memory_used = 0;
 
-void memory_install(uint32_t kernel_end) {
-	last_alloc = kernel_end + 0x1000;
+void memory_install(void* _end) {
+	last_alloc = _end + 0x1000;
 	heap_begin = last_alloc;
 	pheap_end = 0x400000;
 	pheap_begin = pheap_end - (MAX_PAGE_ALIGNED_ALLOCS * 4096);
@@ -139,5 +139,3 @@ unsigned short *memsetw(unsigned short *dest, unsigned short val, size_t count) 
     for( ; count != 0; count--) *temp++ = val;
     return dest;
 }
-
-

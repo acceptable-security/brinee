@@ -120,7 +120,7 @@ void task_cleaner() {
 	}
 }
 
-process_t* thread_new(char* name, uint32_t addr) {
+process_t* thread_new(char* name, void(*addr)()) {
 	int i;
 	process_t* proc = (process_t*) malloc(sizeof(process_t));
 
@@ -158,7 +158,7 @@ process_t* thread_new(char* name, uint32_t addr) {
 	proc->started = false;
 
 
-	__asm__ volatile("mov %%cr3, %%eax":"=a"(proc->cr3));
+	// __asm__ volatile("mov %%cr3, %%eax":"=a"(proc->cr3));
 
 	return proc;
 }
@@ -203,13 +203,13 @@ void threads_install() {
 	lpid = 0;
 	tasks_enabled = 0;
 
-	currentProcess = thread_new("idle", (uint32_t)task_idle);
+	currentProcess = thread_new("idle", task_idle);
 	currentProcess->next = currentProcess;
 	currentProcess->prev = currentProcess;
 
-	thread_add_newenv(thread_new("test", (uint32_t)task_test));
+	thread_add_newenv(thread_new("test", task_test));
 
-	thread_add_newenv(thread_new("task_cleaner", (uint32_t)task_cleaner)); // task cleaner
+	thread_add_newenv(thread_new("task_cleaner", task_cleaner)); // task cleaner
 	// thread_add_newenv(thread_new("task_example", (uint32_t)task_example)); // example
 
 	irq_install_handler(8, schedule);

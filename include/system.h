@@ -14,7 +14,7 @@ struct regs
     unsigned int gs, fs, es, ds;
     unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
     unsigned int int_no, err_code;
-    unsigned int eip, cs, eflags, useresp, ss;    
+    unsigned int eip, cs, eflags, useresp, ss;
 };
 
 /* MAIN.C */
@@ -53,7 +53,7 @@ extern void timer_install();
 extern void keyboard_install();
 
 /* MEMORY.C */
-extern void memory_install(unsigned long int kernel_end);
+extern void memory_install(void* _end);
 
 extern void load_userspace();
 
