@@ -32,21 +32,11 @@ void task_example() {
 	}
 }
 
+void threads_start();
 void schedule(struct regs *r) {
 	currentProcess->esp = r;
 	currentProcess = currentProcess->next;
-	__asm__ volatile("mov %0, %%esp;"
-			 "pop %%gs;"
-			 "pop %%fs;"
-			 "pop %%es;"
-			 "pop %%ds;"
-			 "mov $0x20, %%al;"
-			 "mov $0x20, %%dx;"
-			 "outb %%al, %%dx;"
-			 "popa;"
-			 "add $0x8, %%esp;"
-			 "iret"
-			 : :"r"(currentProcess->esp));
+	__asm__ volatile("jmp threads_start;");
 }
 
 void schedule_noirq() {
@@ -141,11 +131,13 @@ process_t* thread_new(char* name, uint32_t addr) {
 	proc->state = PROCESS_STATE_ALIVE;
 	// notify?
 
-	proc->esp = (uint32_t) malloc(4096) + 4096;
-	uint32_t stacktop = proc->esp;
+	proc->stacktop = (uint32_t) malloc(4096);
+	proc->esp = proc->stacktop + 4096;
+
+	proc->esp -= sizeof(void(*)());
+	*(void(**)())(proc->esp) = threads_killcurrent;
 
 	proc->esp -= sizeof(struct regs);
-
 	struct regs *r = proc->esp;
 
 	r->eflags = 0x00000202;
@@ -157,7 +149,7 @@ process_t* thread_new(char* name, uint32_t addr) {
 	r->edx = 0;
 	r->esi = 0;
 	r->edi = 0;
-	r->ebp = stacktop;
+	r->ebp = proc->stacktop + 4096;
 	r->useresp = 0xDEADBEEF;
 	r->ds = 0x10;
 	r->fs = 0x10;
@@ -188,19 +180,13 @@ int thread_add(process_t* proc) {
 	return proc->pid;
 }
 
+extern void irq_load_state();
 void threads_start() {
-	// currentProcess->started = true;
 	__asm__ volatile("mov %0, %%esp;"
-			 "pop %%gs;"
-			 "pop %%fs;"
-			 "pop %%es;"
-			 "pop %%ds;"
 			 "mov $0x20, %%al;"
 			 "mov $0x20, %%dx;"
 			 "outb %%al, %%dx;"
-			 "popa;"
-			 "add $0x8, %%esp;"
-			 "iret"
+			 "jmp irq_load_state;"
 			 : :"r"(currentProcess->esp));
 }
 

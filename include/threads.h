@@ -1,32 +1,30 @@
 #include <system.h>
 #include <stdlib.h>
 
-#define PROCESS_STATE_ALIVE 0
-#define PROCESS_STATE_ZOMBIE 1
-#define PROCESS_STATE_DEAD 2
+typedef enum {
+	PROCESS_STATE_ALIVE,
+	PROCESS_STATE_ZOMBIE,
+	PROCESS_STATE_DEAD
+} processstate_t;
 
-struct process;
-
-struct process {
-	struct process* prev;
+typedef struct process_t {
+	struct process_t* prev;
+	struct process_t* next;
 	char* name;
 
 	uint32_t pid;
 	uint32_t esp;
-	uint32_t stacktop;
-	// uint32_t eip;
 	uint32_t cr3;
-	uint32_t state;
+	processstate_t state;
+	uint32_t stacktop;
 
 	void (*notify)(int);
-	struct process* next;
 
-	// struct regs r;
 	bool started;
-};
-
-typedef struct process process_t;
+} process_t;
 
 process_t* thread_new(char* name, uint32_t addr);
 void threads_install();
 int thread_add(process_t* proc);
+
+void schedule(struct regs *r);

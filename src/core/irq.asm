@@ -129,6 +129,8 @@ irq15:
 
 extern irq_handler
 
+global irq_load_state
+
 irq_common_stub:
     pusha
     push ds
@@ -148,6 +150,7 @@ irq_common_stub:
     call eax
     pop eax
 
+irq_load_state:
     pop gs
     pop fs
     pop es
