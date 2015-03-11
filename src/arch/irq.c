@@ -1,5 +1,6 @@
 #include <system.h>
 #include <stdlib.h>
+#include <idt.h>
 
 extern void irq0();
 extern void irq1();
