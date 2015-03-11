@@ -4,6 +4,7 @@
 extern void pic_install();
 extern void pit_install();
 extern void threads_install();
+extern void pci_install();
 
 extern uint32_t kernel_end; // end of the kernel
 
@@ -25,10 +26,10 @@ char *flan[4] = {
 
 void main() {
     int i;
- 
-    // INITIALIZE HEAP  
+
+    // INITIALIZE HEAP
     memory_install((uint32_t)&kernel_end);
- 
+
     // INTIALIZE INTERUPT SERVICES
     init_video();
     gdt_install();
@@ -53,6 +54,7 @@ void load_userspace() {
     // INITIALIZE PEREPHERALS
     
     keyboard_install();
+    pci_install();
 
       // DISPLAY THE FLAN!
     for (i = 0; i < 4; i++ ) {
@@ -85,5 +87,5 @@ void load_userspace() {
 
     puts("What? We aint good 'nuff fo ya?\n");
     puts("Well go FUCK YOURSELF\n");
-    
+
 }

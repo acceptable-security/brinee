@@ -28,7 +28,7 @@ void idt_set_gate(unsigned char num, unsigned long base, unsigned short sel, uns
 
 inline int idt_enabled() {
     unsigned long flags;
-    asm volatile ( "pushf\n\t"
+    __asm__ volatile ( "pushf\n\t"
                    "pop %0"
                    : "=g"(flags) );
     return flags & (1 << 9);

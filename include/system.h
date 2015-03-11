@@ -55,7 +55,7 @@ extern void timer_install();
 extern void keyboard_install();
 
 /* MEMORY.C */
-extern void memory_install(unsigned long int kernel_end);
+extern void memory_install(unsigned int kernel_end);
 
 extern void load_userspace();
 
