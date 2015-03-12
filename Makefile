@@ -2,7 +2,7 @@ ASM = nasm
 ASMFLAGS = -f elf
 
 CC = cc
-CFLAGS = -Wall -O -m32 -fstrength-reduce -fomit-frame-pointer -ffreestanding  -finline-functions -nostdinc -fno-builtin -Iinclude/ -c -g
+CFLAGS = -Wall -O -m32 -fstrength-reduce -fomit-frame-pointer -ffreestanding  -finline-functions -Iinclude/ -c -g
 
 LFLAGS = -m32 -ffreestanding -O2 -nostdlib -lgcc -g
 
