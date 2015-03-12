@@ -1,12 +1,28 @@
 #include <system.h>
+#include <stdio.h>
 
-#define CPU_EXCEPTION(number, message) void isr ## number () { puts("ERROR: " #message "\n"); for(;;) {} }
+#define CPU_EXCEPTION(number, message) void isr ## number (struct regs *r) { bsod(#message, r); for(;;) {} }
 #define REGISTER_EXCEPTION(number) idt_set_gate(number, (unsigned)isr ## number, 0x08, 0x8E);
 /*
  * CPU Exceptions are by nature evil
  * So all we do when they ge thrown
  * Is spit out the error and SHUT EVERYTHING DOWN
  */
+
+void bsod(char* message, struct regs *r) {
+    cls();
+    printf("PANIC: %s\n\n", message);
+    printf("EAX: %X\n", r->eax);
+    printf("EBX: %X\n", r->ebx);
+    printf("ECX: %X\n", r->ecx);
+    printf("EDX: %X\n", r->edx);
+    printf("ESi: %X\n", r->esi);
+    printf("EDI: %X\n", r->edi);
+    printf("\nStack: %X:%X\n", r->ebp, r->esp);
+    printf("EIP: %X\n", r->eip);
+
+    for ( ;; ) {}
+}
 
 CPU_EXCEPTION(0,  "Dividing by Zero");
 CPU_EXCEPTION(1,  "Debug");

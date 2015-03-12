@@ -52,7 +52,7 @@ void main() {
 void load_userspace() {
     int i;
     // INITIALIZE PEREPHERALS
-    
+
     keyboard_install();
     pci_install();
 
@@ -75,6 +75,12 @@ void load_userspace() {
             break;
         else if( strcmp(output, "flan") ) {
             puts("i gav u flan lredy :(\ntri agen nxt tiem\n");
+        }
+        else if( strcmp(output, "break") ) {
+            puts("Causing a divide by zero error...\n");
+            for ( i = 0; i < 1; i++ ) {
+                i = 2 / i;
+            }
         }
         else {
             puts("Got the command ");
