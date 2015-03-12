@@ -1,4 +1,4 @@
-#include <stdlib.h>
+#include <stdint.h>
 
 #define PIT_REG_COUNTER0 0x40
 #define PIT_REG_COUNTER1 0x41
@@ -32,8 +32,8 @@
 void tasks_enable(uint8_t i);
 void tasks_init();
 void pit_irq();
-static inline void __pit_send_cmd(uint8_t cmd);
-static inline void __pit_send_data(uint16_t data, uint8_t counter);
-static inline uint8_t __pit_read_data (uint16_t counter);
-static void pit_start_counter (uint32_t freq, uint8_t counter, uint8_t mode);
+inline void __pit_send_cmd(uint8_t cmd);
+inline void __pit_send_data(uint16_t data, uint8_t counter);
+inline uint8_t __pit_read_data (uint16_t counter);
+void pit_start_counter (uint32_t freq, uint8_t counter, uint8_t mode);
 void pit_install();

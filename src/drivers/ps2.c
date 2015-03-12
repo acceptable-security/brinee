@@ -1,6 +1,8 @@
-#include <system.h>
 #include <stdlib.h>
-#include <kb_us.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <kernel/kb_us.h>
+#include <kernel/system.h>
 
 int keyState = 0; // keeping track of special chars.
 

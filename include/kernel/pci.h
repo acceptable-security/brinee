@@ -1,4 +1,4 @@
-#include <stdlib.h>
+#include <stdint.h>
 
 // Struct to hold the PCI device information.
 
@@ -107,3 +107,4 @@ struct pci_devlist {
 typedef struct pci_devlist pci_devlist_t;
 
 void pci_install();
+void pci_devlist_add(pci_devlist_t* list, pci_device_t* device);

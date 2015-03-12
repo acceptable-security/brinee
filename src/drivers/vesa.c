@@ -1,4 +1,5 @@
-#include <threads.h> // will include system.h and stdlib.h
+#include <kernel/threads.h> // will include system.h and stdlib.h
+#include <stdint.h>
 
 struct VBEInfoBlock {
         char sig[4]; // "VESA"

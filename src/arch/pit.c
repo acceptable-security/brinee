@@ -1,5 +1,8 @@
-#include <pit.h>
-#include <system.h>
+#include <kernel/pit.h>
+#include <kernel/system.h>
+#include <kernel/threads.h>
+#include <stdint.h>
+#include <stdio.h>
 
 static uint8_t tasking = 0;
 static uint8_t task_was_on = 0;
@@ -18,38 +21,31 @@ void tasks_init() {
 
 
 void pit_handler(struct regs *r) {
-	timer_handler();
-
-	// puts("start of pit_handler\n");
-
 	if(tasking) {
-		// puts("schedule call\n");
 		schedule(r);
 	}
-
-	//puts("end of pit_handler\n");
 }
 
 
-static inline void __pit_send_cmd(uint8_t cmd) {
+inline void __pit_send_cmd(uint8_t cmd) {
 	outportb(PIT_REG_COMMAND, cmd);
 }
 
-static inline void __pit_send_data(uint16_t data, uint8_t counter) {
+inline void __pit_send_data(uint16_t data, uint8_t counter) {
 	uint8_t	port = (counter==PIT_OCW_COUNTER_0) ? PIT_REG_COUNTER0 :
 		((counter==PIT_OCW_COUNTER_1) ? PIT_REG_COUNTER1 : PIT_REG_COUNTER2);
 
 	outportb (port, (uint8_t)data);
 }
 
-static inline uint8_t __pit_read_data (uint16_t counter) {
+inline uint8_t __pit_read_data (uint16_t counter) {
 	uint8_t	port = (counter==PIT_OCW_COUNTER_0) ? PIT_REG_COUNTER0 :
 		((counter==PIT_OCW_COUNTER_1) ? PIT_REG_COUNTER1 : PIT_REG_COUNTER2);
 
 	return inportb (port);
 }
 
-static void pit_start_counter (uint32_t freq, uint8_t counter, uint8_t mode) {
+void pit_start_counter (uint32_t freq, uint8_t counter, uint8_t mode) {
 	if (freq==0)
 		return;
 

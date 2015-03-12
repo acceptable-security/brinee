@@ -1,7 +1,14 @@
-#include <system.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
 
 #define MAX_PAGE_ALIGNED_ALLOCS 32
+
+typedef struct {
+	uint8_t status;
+	uint32_t size;
+} alloc_t;
+
 
 uint32_t last_alloc = 0;
 uint32_t heap_end = 0;
@@ -28,7 +35,7 @@ void free(void* mem) {
 }
 
 void pfree(void* mem) {
-	if(mem < pheap_begin || mem > pheap_end)
+	if((uint32_t)mem < pheap_begin || (uint32_t)mem > pheap_end)
 		return;
 
 	uint32_t ad = (uint32_t)mem;
@@ -139,5 +146,3 @@ unsigned short *memsetw(unsigned short *dest, unsigned short val, size_t count) 
     for( ; count != 0; count--) *temp++ = val;
     return dest;
 }
-
-

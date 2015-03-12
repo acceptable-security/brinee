@@ -1,10 +1,20 @@
-#include <system.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
 
+extern void irq_install();
+extern void isrs_install();
+extern void idt_install();
+extern void gdt_install();
+extern void init_video();
+extern void memory_install(uint32_t base);
 extern void pic_install();
 extern void pit_install();
 extern void threads_install();
 extern void pci_install();
+extern void keyboard_install();
 
 extern uint32_t kernel_end; // end of the kernel
 
@@ -25,8 +35,6 @@ char *flan[4] = {
 };
 
 void main() {
-    int i;
-
     // INITIALIZE HEAP
     memory_install((uint32_t)&kernel_end);
 
@@ -63,8 +71,6 @@ void load_userspace() {
     }
 
     puts("Welcome to the Brine Kernlee :)) pls hv flan\n");
-
-    i = 0 / 0;
 
     while (1) {
         char* output = ( char* ) malloc(128);

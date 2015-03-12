@@ -1,4 +1,5 @@
-#include <system.h>
+#include <kernel/idt.h>
+#include <kernel/system.h>
 #include <stdio.h>
 
 #define CPU_EXCEPTION(number, message) void isr ## number (struct regs *r) { bsod(#message, r); for(;;) {} }

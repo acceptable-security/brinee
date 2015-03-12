@@ -1,6 +1,6 @@
-#include <system.h>
-#include <stdlib.h>
-#include <idt.h>
+#include <kernel/system.h>
+#include <kernel/idt.h>
+#include <stdio.h>
 
 extern void irq0();
 extern void irq1();

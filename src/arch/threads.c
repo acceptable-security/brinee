@@ -1,5 +1,9 @@
-#include <system.h>
-#include <threads.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <kernel/threads.h>
+#include <kernel/pit.h>
+#include <kernel/system.h>
 
 process_t* currentProcess = 0;
 uint32_t lpid;
@@ -34,7 +38,7 @@ void task_example() {
 
 void threads_start();
 void schedule(struct regs *r) {
-	currentProcess->esp = r;
+	currentProcess->esp = (uint32_t)r;
 	currentProcess = currentProcess->next;
 	__asm__ volatile("jmp threads_start;");
 }
@@ -81,7 +85,7 @@ void threads_killcurrent() {
 	free((void *)currentProcess->stacktop);
 	free(currentProcess);
 
-	pfree(currentProcess->cr3);
+	pfree((void*) currentProcess->cr3);
 
 	currentProcess->prev->next = currentProcess->next;
 	currentProcess->next->prev = currentProcess->prev;
@@ -121,7 +125,6 @@ void task_cleaner() {
 }
 
 process_t* thread_new(char* name, uint32_t addr) {
-	int i;
 	process_t* proc = (process_t*) malloc(sizeof(process_t));
 
 	memset(proc, 0, sizeof(process_t));
@@ -138,7 +141,7 @@ process_t* thread_new(char* name, uint32_t addr) {
 	*(void(**)())(proc->esp) = threads_killcurrent;
 
 	proc->esp -= sizeof(struct regs);
-	struct regs *r = proc->esp;
+	struct regs *r = (struct regs*) proc->esp;
 
 	r->eflags = 0x00000202;
 	r->cs = 0x8;

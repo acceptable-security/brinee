@@ -1,5 +1,6 @@
-#include <system.h>
-#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <kernel/system.h>
 
 typedef enum {
 	PROCESS_STATE_ALIVE,
@@ -26,5 +27,7 @@ typedef struct process_t {
 process_t* thread_new(char* name, uint32_t addr);
 void threads_install();
 int thread_add(process_t* proc);
+void threads_killcurrent();
+
 
 void schedule(struct regs *r);

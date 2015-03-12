@@ -1,4 +1,4 @@
-#include <system.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 size_t strlen(const char *str) {
@@ -23,4 +23,3 @@ bool strcmp(const char* a, const char* b) {
 
     return true;
 }
-

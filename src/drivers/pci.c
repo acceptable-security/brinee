@@ -1,4 +1,6 @@
-#include <pci.h>
+#include <kernel/pci.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 pci_devlist_t* devlist;
 
@@ -129,6 +131,8 @@ pci_device_t* pci_device_new(uint16_t bus, uint16_t slot, uint16_t function) {
             free(dev_obj);
             return 0;
     }
+
+    return dev_obj;
 }
 
 void pci_probe() {

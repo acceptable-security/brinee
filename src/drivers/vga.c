@@ -1,5 +1,6 @@
-#include <system.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 unsigned short *textmemptr; // default is VGA mode
 int attrib = 0x0F;
@@ -13,7 +14,7 @@ void scroll(void) {
     // VGA mode has only 25 lines.
     if(csr_y >= 25) {
         temp = csr_y - 25 + 1;
-        
+
         memcpy (textmemptr, textmemptr + temp * 80, (25 - temp) * 80 * 2);
 
         memsetw (textmemptr + (25 - temp) * 80, blank, 80);
