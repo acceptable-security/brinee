@@ -152,7 +152,7 @@ SECTIONS
    . = ALIGN(32 / 8);
   }
   . = ALIGN(32 / 8);
-  kernel_end = .;
+  _end = .;
   PROVIDE (end = .);
   . = DATA_SEGMENT_END (.);
   /* Stabs debugging sections.  */

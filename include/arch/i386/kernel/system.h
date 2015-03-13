@@ -23,7 +23,7 @@ extern void irq_uninstall_handler(int irq);
 
 extern void keyboard_install();
 
-extern void memory_install(unsigned int kernel_end);
+extern void memory_install(void* _end);
 
 extern void load_userspace();
 

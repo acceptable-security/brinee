@@ -11,7 +11,7 @@ uint16_t pci_config_read(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset
     uint64_t lfunc = (uint64_t)func;
     uint16_t tmp = 0;
     address = (uint64_t)((lbus << 16) | (lslot << 11) |
-              (lfunc << 8) | (offset & 0xfc) | ((uint32_t)0x80000000));
+              (lfunc << 8) | (offset & 0xfc) | (0x80000000));
     outportl (0xCF8, address);
     tmp = (uint16_t)((inportl (0xCFC) >> ((offset & 2) * 8)) & 0xffff);
     return (tmp);

@@ -18,7 +18,7 @@ uint32_t pheap_end = 0;
 uint8_t *pheap_desc = 0;
 uint32_t memory_used = 0;
 
-void memory_install(uint32_t kernel_end) {
+void memory_install(void* kernel_end) {
 	last_alloc = kernel_end + 0x1000;
 	heap_begin = last_alloc;
 	pheap_end = 0x400000;
@@ -35,10 +35,10 @@ void free(void* mem) {
 }
 
 void pfree(void* mem) {
-	if((uint32_t)mem < pheap_begin || (uint32_t)mem > pheap_end)
+	if(mem < pheap_begin || mem > pheap_end)
 		return;
 
-	uint32_t ad = (uint32_t)mem;
+	uint32_t ad = mem;
 	ad -= pheap_begin;
 	ad /= 4096;
 
@@ -66,7 +66,7 @@ void* malloc(size_t size) {
 		return 0;
 
 	uint8_t *mem = (uint8_t *)heap_begin;
-	while((uint32_t)mem < last_alloc) {
+	while(mem < last_alloc) {
 		alloc_t *a = (alloc_t *)mem;
 
 		if(!a->size)
@@ -113,9 +113,9 @@ void* malloc(size_t size) {
 	last_alloc += 4;
 
 	memory_used += size + 4 + sizeof(alloc_t);
-	memset((char *)((uint32_t)alloc + sizeof(alloc_t)), 0, size);
+	memset((char *)(alloc + sizeof(alloc_t)), 0, size);
 
-	return (char *)((uint32_t)alloc + sizeof(alloc_t));
+	return (char *)(alloc + sizeof(alloc_t));
 }
 
 void* calloc(size_t num, size_t size) {

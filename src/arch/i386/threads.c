@@ -38,7 +38,7 @@ void task_example() {
 
 void threads_start();
 void schedule(struct regs *r) {
-	currentProcess->esp = (uint32_t)r;
+	currentProcess->esp = r;
 	currentProcess = currentProcess->next;
 	__asm__ volatile("jmp threads_start;");
 }
@@ -124,7 +124,7 @@ void task_cleaner() {
 	}
 }
 
-process_t* thread_new(char* name, uint32_t addr) {
+process_t* thread_new(char* name, void(*addr)()) {
 	process_t* proc = (process_t*) malloc(sizeof(process_t));
 
 	memset(proc, 0, sizeof(process_t));
@@ -134,7 +134,7 @@ process_t* thread_new(char* name, uint32_t addr) {
 	proc->state = PROCESS_STATE_ALIVE;
 	// notify?
 
-	proc->stacktop = (uint32_t) malloc(4096);
+	proc->stacktop =  malloc(4096);
 	proc->esp = proc->stacktop + 4096;
 
 	proc->esp -= sizeof(void(*)());
@@ -145,7 +145,7 @@ process_t* thread_new(char* name, uint32_t addr) {
 
 	r->eflags = 0x00000202;
 	r->cs = 0x8;
-	r->eip = (uint32_t)addr;
+	r->eip = addr;
 	r->eax = 0;
 	r->ebx = 0;
 	r->ecx = 0;
@@ -161,7 +161,7 @@ process_t* thread_new(char* name, uint32_t addr) {
 	proc->started = false;
 
 
-	__asm__ volatile("mov %%cr3, %%eax":"=a"(proc->cr3));
+	// __asm__ volatile("mov %%cr3, %%eax":"=a"(proc->cr3));
 
 	return proc;
 }
@@ -206,14 +206,14 @@ void threads_install() {
 	lpid = 0;
 	tasks_enabled = 0;
 
-	currentProcess = thread_new("idle", (uint32_t)task_idle);
+	currentProcess = thread_new("idle", task_idle);
 	currentProcess->next = currentProcess;
 	currentProcess->prev = currentProcess;
 
-	thread_add_newenv(thread_new("test", (uint32_t)task_test));
+	thread_add_newenv(thread_new("test", task_test));
 
-	thread_add_newenv(thread_new("task_cleaner", (uint32_t)task_cleaner)); // task cleaner
-	// thread_add_newenv(thread_new("task_example", (uint32_t)task_example)); // example
+	thread_add_newenv(thread_new("task_cleaner", task_cleaner)); // task cleaner
+	// thread_add_newenv(thread_new("task_example", task_example)); // example
 
 	irq_install_handler(8, schedule);
 	threads_start();
