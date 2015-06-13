@@ -38,7 +38,7 @@ void task_example() {
 
 void threads_start();
 void schedule(struct regs *r) {
-	currentProcess->esp = r;
+	currentProcess->esp = (uint32_t) r;
 	currentProcess = currentProcess->next;
 	__asm__ volatile("jmp threads_start;");
 }
@@ -134,7 +134,7 @@ process_t* thread_new(char* name, void(*addr)()) {
 	proc->state = PROCESS_STATE_ALIVE;
 	// notify?
 
-	proc->stacktop =  malloc(4096);
+	proc->stacktop = (uint32_t) malloc(4096);
 	proc->esp = proc->stacktop + 4096;
 
 	proc->esp -= sizeof(void(*)());
@@ -145,7 +145,7 @@ process_t* thread_new(char* name, void(*addr)()) {
 
 	r->eflags = 0x00000202;
 	r->cs = 0x8;
-	r->eip = addr;
+	r->eip = (uint32_t) addr;
 	r->eax = 0;
 	r->ebx = 0;
 	r->ecx = 0;

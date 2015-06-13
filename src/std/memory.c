@@ -10,21 +10,21 @@ typedef struct {
 } alloc_t;
 
 
-uint32_t last_alloc = 0;
-uint32_t heap_end = 0;
-uint32_t heap_begin = 0;
-uint32_t pheap_begin = 0;
-uint32_t pheap_end = 0;
+void* last_alloc = 0;
+void*  heap_end = 0;
+void*  heap_begin = 0;
+void*  pheap_begin = 0;
+void*  pheap_end = 0;
 uint8_t *pheap_desc = 0;
-uint32_t memory_used = 0;
+void*  memory_used = 0;
 
 void memory_install(void* kernel_end) {
-	last_alloc = kernel_end + 0x1000;
+	last_alloc = (void*) ((uint32_t) kernel_end + 0x1000);
 	heap_begin = last_alloc;
-	pheap_end = 0x400000;
+	pheap_end = (void*) 0x400000;
 	pheap_begin = pheap_end - (MAX_PAGE_ALIGNED_ALLOCS * 4096);
 	heap_end = pheap_begin;
-	memset((char *)heap_begin, 0, heap_end - heap_begin);
+	memset(heap_begin, 0, heap_end - heap_begin);
 	pheap_desc = (uint8_t *)malloc(MAX_PAGE_ALIGNED_ALLOCS);
 }
 
@@ -38,8 +38,8 @@ void pfree(void* mem) {
 	if(mem < pheap_begin || mem > pheap_end)
 		return;
 
-	uint32_t ad = mem;
-	ad -= pheap_begin;
+	uint32_t ad = (uint32_t) mem;
+	ad -= (uint32_t) pheap_begin;
 	ad /= 4096;
 
 	pheap_desc[ad] = 0;
@@ -66,7 +66,7 @@ void* malloc(size_t size) {
 		return 0;
 
 	uint8_t *mem = (uint8_t *)heap_begin;
-	while(mem < last_alloc) {
+	while ((uint32_t) mem < (uint32_t) last_alloc) {
 		alloc_t *a = (alloc_t *)mem;
 
 		if(!a->size)
