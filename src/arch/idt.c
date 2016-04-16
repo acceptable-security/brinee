@@ -11,6 +11,11 @@ struct idt_entry {
 
 struct idt_entry idt[256];
 
+struct {
+    unsigned short limit;
+    unsigned int base;
+} __attribute__((packed)) idtp;
+
 void idt_empty_entry() {
     __asm__ volatile("iretl");
 }
@@ -27,18 +32,13 @@ void idt_set_gate(unsigned char num, unsigned long base, unsigned short sel, uns
 inline int idt_enabled() {
     unsigned long flags;
     __asm__ volatile ( "pushf\n\t"
-                   "pop %0"
-                   : "=g"(flags) );
+                       "pop %0"
+                       : "=g"(flags) );
     return flags & (1 << 9);
 }
 
 void idt_install() {
     int i;
-
-    struct {
-        unsigned short limit;
-        unsigned int base;
-    } __attribute__((packed)) idtp;
 
     idtp.limit = (sizeof (struct idt_entry) * 256) - 1;
     idtp.base = (unsigned int)&idt;
@@ -47,5 +47,5 @@ void idt_install() {
         idt_set_gate(i, (unsigned) idt_empty_entry, 0x08, 0x8E);
     }
 
-    __asm__ ( "lidt (%0)" : : "g"(&idtp) );
+    __asm__ ( "lidt (%0)" : : "g"(idtp) );
 }

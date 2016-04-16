@@ -17,14 +17,6 @@ uint16_t pci_config_read(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset
     return (tmp);
 }
 
-// uint16_t pci_checkclass(uint16_t bus, uint16_t slot, uint16_t function) {
-//     return (pci_config_read(bus, device, function, 0xA) & ~0x00FF) >> 8;
-// }
-//
-// uint16_t pci_checksubclass(uint16_t bus, uint16_t slot, uint16_t function) {
-//     return (pci_config_read(bus, device, function, 0xA);
-// }
-
 pci_device_t* pci_device_new(uint16_t bus, uint16_t slot, uint16_t function) {
     uint16_t vendor = pci_config_read(bus, slot, function, 0);
 
@@ -53,19 +45,16 @@ pci_device_t* pci_device_new(uint16_t bus, uint16_t slot, uint16_t function) {
     dev_obj->header_type = pci_config_read(bus, slot, function, 14) & 0x00FF;
     dev_obj->bist = (pci_config_read(bus, slot, function, 14) & ~0x00FF) >> 8;
 
-    switch ( dev_obj->header_type ) {
-        case 0: ;
-            // Normal
-
+    if ( dev_obj->header_type == 0 ) {
             pci_device_normal_t* extra = (pci_device_normal_t*) malloc(sizeof(pci_device_normal_t));
 
-            extra->baseaddr_0 = (pci_config_read(bus, slot, function, 0x10)) & (pci_config_read(bus, slot, function, 0x12) << 8);
-            extra->baseaddr_1 = (pci_config_read(bus, slot, function, 0x14)) & (pci_config_read(bus, slot, function, 0x16) << 8);
-            extra->baseaddr_2 = (pci_config_read(bus, slot, function, 0x18)) & (pci_config_read(bus, slot, function, 0x18) << 8);
-            extra->baseaddr_3 = (pci_config_read(bus, slot, function, 0x1C)) & (pci_config_read(bus, slot, function, 0x1E) << 8);
-            extra->baseaddr_4 = (pci_config_read(bus, slot, function, 0x20)) & (pci_config_read(bus, slot, function, 0x22) << 8);
-            extra->baseaddr_5 = (pci_config_read(bus, slot, function, 0x24)) & (pci_config_read(bus, slot, function, 0x26) << 8);
-            extra->cardbus_cis = (pci_config_read(bus, slot, function, 0x28)) & (pci_config_read(bus, slot, function, 0x2A) << 8);
+            extra->baseaddr_0 = (pci_config_read(bus, slot, function, 0x10)) | (pci_config_read(bus, slot, function, 0x12) << 16);
+            extra->baseaddr_1 = (pci_config_read(bus, slot, function, 0x14)) | (pci_config_read(bus, slot, function, 0x16) << 16);
+            extra->baseaddr_2 = (pci_config_read(bus, slot, function, 0x18)) | (pci_config_read(bus, slot, function, 0x18) << 16);
+            extra->baseaddr_3 = (pci_config_read(bus, slot, function, 0x1C)) | (pci_config_read(bus, slot, function, 0x1E) << 16);
+            extra->baseaddr_4 = (pci_config_read(bus, slot, function, 0x20)) | (pci_config_read(bus, slot, function, 0x22) << 16);
+            extra->baseaddr_5 = (pci_config_read(bus, slot, function, 0x24)) | (pci_config_read(bus, slot, function, 0x26) << 16);
+            extra->cardbus_cis = (pci_config_read(bus, slot, function, 0x28)) | (pci_config_read(bus, slot, function, 0x2A) << 16);
 
             extra->subsystem_vendor = pci_config_read(bus, slot, function, 0x2C);
             extra->subsystem = pci_config_read(bus, slot, function, 0x2E);
@@ -81,11 +70,8 @@ pci_device_t* pci_device_new(uint16_t bus, uint16_t slot, uint16_t function) {
 
             dev_obj->extra = (void*) extra;
 
-            break;
-
-        case 1: ;
-            // PCI-PCI bridge
-
+    }
+    else if ( dev_obj->header_type == 1 ) {
             pci_device_pcipci_t* extra1 = (pci_device_pcipci_t*) malloc(sizeof(pci_device_pcipci_t));
 
             extra1->baseaddr_0 = (pci_config_read(bus, slot, function, 0x10)) & (pci_config_read(bus, slot, function, 0x12) << 8);
@@ -118,14 +104,9 @@ pci_device_t* pci_device_new(uint16_t bus, uint16_t slot, uint16_t function) {
             extra1->bridge_control = pci_config_read(bus, slot, function, 0x3E);
 
             dev_obj->extra = (void*) extra1;
+    }
+    else {
 
-            break;
-
-        case 2: ;
-            // PCI-to-CardBus
-            break;
-
-        default: ;
             // printf("Unable to deal with device 0x%X\n", dev_obj->header_type);
 
             free(dev_obj);
@@ -147,7 +128,8 @@ void pci_probe() {
                     continue;
                 }
 
-                puts("PCI THINGY ADDDED\n");
+                printf("PCI Device %x %x %d %x\n", dev_obj->vendor, dev_obj->device, dev_obj->header_type, ((pci_device_normal_t*)dev_obj->extra)->baseaddr_0);
+
 
                 pci_devlist_add(devlist, dev_obj);
             }
@@ -177,8 +159,17 @@ void pci_devlist_add(pci_devlist_t* list, pci_device_t* device) {
     device->dev_id = list->size - 1;
 }
 
+void pci_run_driver(int class, int subclass, void (*handle)(pci_device_t*)) {
+    for ( int i = 0; i < devlist->size; i++ ) {
+        pci_device_t* dev = devlist->devices[i];
+
+        if ( dev->class == class && dev->subclass == subclass ) {
+            handle(dev);
+        }
+    }
+}
+
 void pci_install() {
     devlist = pci_devlist_new(PCI_MAXDEVS);
-
     pci_probe();
 }

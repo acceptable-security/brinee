@@ -29,7 +29,7 @@ void task_example() {
 	int cnt = 0;
 
 	while(1) {
-		if ( cnt % 30 )
+		if ( cnt % 300000 )
 			puts("Weird\n");
 
 		cnt ++;
@@ -52,26 +52,25 @@ void schedule_noirq() {
 
 void thread_kill(uint32_t pid) {
 	puts("threads_kill\n");
-	if(pid == 1)
+	if ( pid == 1 ) {
 		return; // can't kill the idle!
+	}
 
-	if(pid == currentProcess->pid)
+	if ( pid == currentProcess->pid ) {
 		threads_killcurrent();
+	}
 
 	process_t* orig = currentProcess;
 	process_t* proc = orig;
 
-	while(1) {
-		if(proc->pid == pid) {
+	do {
+		if ( proc->pid == pid ) {
 			proc->state = PROCESS_STATE_ZOMBIE;
 			break;
 		}
 
 		proc = proc->next;
-
-		if(proc == orig)
-			break;
-	}
+	} while ( proc != orig );
 }
 
 void threads_killcurrent() {
@@ -97,28 +96,31 @@ void threads_killcurrent() {
 void task_cleaner() {
 	puts("it's killin time :^)");
 	reset:;
-	process_t *orig = currentProcess;
-	process_t *proc = orig;
+	process_t* orig = currentProcess;
+	process_t* proc = orig;
+
 	while(1) {
 		proc = proc->next;
 
-		if(proc == currentProcess)
+		if ( proc == currentProcess ) {
 			continue;
+		}
 
-		if(proc->state == PROCESS_STATE_ZOMBIE) {
+		if ( proc->state == PROCESS_STATE_ZOMBIE ) {
 			tasks_enable(0);
 
 			proc->prev->next = proc->next;
 			proc->next->prev = proc->prev;
 
-			free((void *)proc->stacktop);
+			free((void*) proc->stacktop);
 			free(proc);
 
 			tasks_enable(1);
 		}
 
-		if(proc == orig)
+		if ( proc == orig ) {
 			goto reset;
+		}
 
 		schedule_noirq();
 	}
@@ -211,7 +213,6 @@ void threads_install() {
 	currentProcess->prev = currentProcess;
 
 	thread_add_newenv(thread_new("test", task_test));
-
 	thread_add_newenv(thread_new("task_cleaner", task_cleaner)); // task cleaner
 	// thread_add_newenv(thread_new("task_example", task_example)); // example
 

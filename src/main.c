@@ -49,8 +49,6 @@ void main() {
 
     __asm__ volatile ("sti");
 
-    // load_userspace();
-
     threads_install();
 
     puts("Uh, this shouldn't be here!");
@@ -58,14 +56,12 @@ void main() {
 }
 
 void load_userspace() {
-    int i;
     // INITIALIZE PEREPHERALS
-
     keyboard_install();
     pci_install();
 
       // DISPLAY THE FLAN!
-    for (i = 0; i < 4; i++ ) {
+    for (int i = 0; i < 4; i++ ) {
         puts(flan[i]);
         putch('\n');
     }
@@ -84,7 +80,7 @@ void load_userspace() {
         }
         else if( strcmp(output, "break") ) {
             puts("Causing a divide by zero error...\n");
-            for ( i = 0; i < 1; i++ ) {
+            for ( int i = 0; i < 1; i++ ) {
                 i = 2 / i;
             }
         }
@@ -99,5 +95,4 @@ void load_userspace() {
 
     puts("What? We aint good 'nuff fo ya?\n");
     puts("Well go FUCK YOURSELF\n");
-
 }

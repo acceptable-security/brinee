@@ -4,8 +4,8 @@ start:
     mov esp, sys_stack
     jmp stublet
 
-; Keep this or fuck off.
 ALIGN 4
+
 mboot:
     ; Multiboot macros to make a few lines later more readable
     MULTIBOOT_PAGE_ALIGN	equ 1<<0
