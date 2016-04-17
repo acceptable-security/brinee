@@ -25,4 +25,11 @@ $(ASM_OBJECTS):
 	$(ASM) $(ASMFLAGS) $(subst .o,.asm,$@) -o $@
 
 clean:
-	rm -f $(C_OBJECTS) $(ASM_OBJECTS) kernel.bin
+	rm -f $(C_OBJECTS) $(ASM_OBJECTS) kernel.bin brinee.iso
+	rm -rf isodir
+
+image:
+	mkdir -p isodir/boot/grub
+	cp kernel.bin isodir/boot/kernel.bin
+	cp grub.cfg isodir/boot/grub/grub.cfg
+	grub-mkrescue -o brinee.iso isodir

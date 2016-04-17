@@ -99,5 +99,6 @@ void settextcolor(unsigned char forecolor, unsigned char backcolor) {
 // go into VGA mode
 void init_video(void) {
     textmemptr = (unsigned short *)0xB8000;
+    settextcolor(15, 0);
     cls();
 }

@@ -1,3 +1,6 @@
+#include <kernel/multiboot.h>
+
+#include <drivers/vesa.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -34,7 +37,30 @@ char *flan[4] = {
     "/__________\\   "
 };
 
-void main() {
+
+
+void main(multiboot_info_t* multiboot, unsigned int magic) {
+    if ( magic != 0x2BADB002 ) {
+        init_video();
+        puts("Multiboot Signature Verification Failed!");
+        for(;;){}
+        return;
+    }
+
+    vbe_mode_info_t *vbe_mode_info = (vbe_mode_info_t *) multiboot->vbe_mode_info;
+
+    vbe_install(vbe_mode_info);
+
+    // for ( int x = 100; x < 300; x++ ) {
+    //     for ( int y = 100; y < 300; y++ ) {
+    //         vbe_putpixel(x, y, 255, 0, 0);
+    //     }
+    // }
+
+    vbe_putrect(100, 100, 200, 200, 255, 0, 0);
+    vbe_putstr(0, 0, "Welcome", 255,255,255,0,0,0);
+
+    for(;;){}
     // INITIALIZE HEAP
     memory_install(&_end);
 
@@ -48,6 +74,8 @@ void main() {
     // ENABLE INTERRUPTS
 
     __asm__ volatile ("sti");
+
+    printf("Multiboot Magic: 0x%x\n", magic);
 
     threads_install();
 

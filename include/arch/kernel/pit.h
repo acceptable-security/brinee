@@ -34,6 +34,6 @@ void tasks_init();
 void pit_irq();
 inline void __pit_send_cmd(uint8_t cmd);
 inline void __pit_send_data(uint16_t data, uint8_t counter);
-inline uint8_t __pit_read_data (uint16_t counter);
+inline uint8_t __pit_read_data(uint16_t counter);
 void pit_start_counter (uint32_t freq, uint8_t counter, uint8_t mode);
 void pit_install();
