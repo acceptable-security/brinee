@@ -46,20 +46,14 @@ void main(multiboot_info_t* multiboot, unsigned int magic) {
         return;
     }
 
-    // puts("Hello!");
-    // puts("Welcome to Brinee Kernel Alpha 1!");
-    // puts("Enjoy your STAY FUCKER!");
+    memory_install(&_end);
 
-    // vbe_putrect(10, 10, 580, 780, 255, 0, 0);
-    // vbe_putstr(20, 20, "Welcome\nMr. Brian", 255,255,255,0,0,255);
-
-    // for(;;){}
     // // INITIALIZE HEAP
     vbe_mode_info_t *vbe_mode_info = (vbe_mode_info_t *) multiboot->vbe_mode_info;
     vbe_install(vbe_mode_info);
     tty_init(MODE_VESA);
 
-    memory_install(&_end);
+
 
     // INTIALIZE INTERUPT SERVICES
     gdt_install();

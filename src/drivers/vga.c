@@ -47,7 +47,6 @@ void vga_cls() {
     vga_move_csr();
 }
 
-/* Puts a single character on the screen */
 void vga_putch(char c) {
     unsigned short *where;
     unsigned att = attrib << 8;
