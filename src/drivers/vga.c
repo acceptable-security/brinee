@@ -6,7 +6,7 @@ unsigned short *textmemptr; // default is VGA mode
 int attrib = 0x0F;
 int csr_x = 0, csr_y = 0;
 
-void scroll(void) {
+void vga_scroll() {
     unsigned blank, temp;
 
     blank = 0x20 | (attrib << 8);
@@ -15,14 +15,14 @@ void scroll(void) {
     if(csr_y >= 25) {
         temp = csr_y - 25 + 1;
 
-        memcpy (textmemptr, textmemptr + temp * 80, (25 - temp) * 80 * 2);
+        memcpy(textmemptr, textmemptr + temp * 80, (25 - temp) * 80 * 2);
 
-        memsetw (textmemptr + (25 - temp) * 80, blank, 80);
+        memsetw(textmemptr + (25 - temp) * 80, blank, 80);
         csr_y = 25 - 1;
     }
 }
 
-void move_csr(void) {
+void vga_move_csr() {
     unsigned temp;
 
     // index = (y * width) + x
@@ -34,21 +34,21 @@ void move_csr(void) {
     outportb(0x3D5, temp);
 }
 
-void cls() {
+void vga_cls() {
     int i;
     unsigned blank = 0x20 | (attrib << 8);
 
     for(i = 0; i < 25; i++)
-        memsetw (textmemptr + i * 80, blank, 80);
+        memsetw(textmemptr + i * 80, blank, 80);
 
     csr_x = 0;
     csr_y = 0;
 
-    move_csr();
+    vga_move_csr();
 }
 
 /* Puts a single character on the screen */
-void putch(char c) {
+void vga_putch(char c) {
     unsigned short *where;
     unsigned att = attrib << 8;
 
@@ -80,25 +80,24 @@ void putch(char c) {
         csr_y++;
     }
 
-    scroll();
-    move_csr();
+    vga_scroll();
+    vga_move_csr();
 }
 
-void puts(char *text) {
+void vga_puts(char *text) {
     int i;
 
     for (i = 0; i < strlen(text); i++) {
-        putch(text[i]);
+        vga_putch(text[i]);
     }
 }
 
-void settextcolor(unsigned char forecolor, unsigned char backcolor) {
+void vga_settextcolor(unsigned char forecolor, unsigned char backcolor) {
     attrib = (backcolor << 4) | (forecolor & 0x0F);
 }
 
-// go into VGA mode
-void init_video(void) {
+void vga_install() {
     textmemptr = (unsigned short *)0xB8000;
-    settextcolor(15, 0);
-    cls();
+    vga_settextcolor(15, 0);
+    vga_cls();
 }

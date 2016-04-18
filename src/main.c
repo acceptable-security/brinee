@@ -1,6 +1,7 @@
 #include <kernel/multiboot.h>
-
 #include <drivers/vesa.h>
+#include <tty.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -11,7 +12,7 @@ extern void irq_install();
 extern void isrs_install();
 extern void idt_install();
 extern void gdt_install();
-extern void init_video();
+extern void vga_install();
 extern void memory_install(void* base);
 extern void pic_install();
 extern void pit_install();
@@ -37,35 +38,30 @@ char *flan[4] = {
     "/__________\\   "
 };
 
-
-
 void main(multiboot_info_t* multiboot, unsigned int magic) {
     if ( magic != 0x2BADB002 ) {
-        init_video();
+        vga_install();
         puts("Multiboot Signature Verification Failed!");
         for(;;){}
         return;
     }
 
+    // puts("Hello!");
+    // puts("Welcome to Brinee Kernel Alpha 1!");
+    // puts("Enjoy your STAY FUCKER!");
+
+    // vbe_putrect(10, 10, 580, 780, 255, 0, 0);
+    // vbe_putstr(20, 20, "Welcome\nMr. Brian", 255,255,255,0,0,255);
+
+    // for(;;){}
+    // // INITIALIZE HEAP
     vbe_mode_info_t *vbe_mode_info = (vbe_mode_info_t *) multiboot->vbe_mode_info;
-
     vbe_install(vbe_mode_info);
+    tty_init(MODE_VESA);
 
-    // for ( int x = 100; x < 300; x++ ) {
-    //     for ( int y = 100; y < 300; y++ ) {
-    //         vbe_putpixel(x, y, 255, 0, 0);
-    //     }
-    // }
-
-    vbe_putrect(100, 100, 200, 200, 255, 0, 0);
-    vbe_putstr(0, 0, "Welcome", 255,255,255,0,0,0);
-
-    for(;;){}
-    // INITIALIZE HEAP
     memory_install(&_end);
 
     // INTIALIZE INTERUPT SERVICES
-    init_video();
     gdt_install();
     idt_install();
     isrs_install();

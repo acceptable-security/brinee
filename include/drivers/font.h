@@ -1,3 +1,6 @@
+unsigned int font_width = 8;
+unsigned int font_height = 8;
+
 const char charset[][8] = {
 {
 0x00,

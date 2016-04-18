@@ -24,7 +24,7 @@ void memory_install(void* kernel_end) {
 	pheap_end = (void*) 0x400000;
 	pheap_begin = pheap_end - (MAX_PAGE_ALIGNED_ALLOCS * 4096);
 	heap_end = pheap_begin;
-	memset(heap_begin, 0, heap_end - heap_begin);
+	// memset(heap_begin, 0, heap_end - heap_begin);
 	pheap_desc = (uint8_t *)malloc(MAX_PAGE_ALIGNED_ALLOCS);
 }
 
