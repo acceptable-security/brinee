@@ -21,7 +21,6 @@ extern void pci_install();
 extern void keyboard_install();
 
 extern void* _end; // end of the kernel
-
 // This is the most important part of kernel.
 // This is so vital to the computer
 // that if you don't have it
@@ -53,8 +52,6 @@ void main(multiboot_info_t* multiboot, unsigned int magic) {
     vbe_install(vbe_mode_info);
     tty_init(MODE_VESA);
 
-
-
     // INTIALIZE INTERUPT SERVICES
     gdt_install();
     idt_install();
@@ -74,6 +71,7 @@ void main(multiboot_info_t* multiboot, unsigned int magic) {
 }
 
 void load_userspace() {
+
     // INITIALIZE PEREPHERALS
     keyboard_install();
     pci_install();

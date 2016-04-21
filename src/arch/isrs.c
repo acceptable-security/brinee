@@ -12,15 +12,19 @@
 
 void bsod(char* message, struct regs *r) {
     cls();
+
     printf("PANIC: %s\n\n", message);
-    printf("EAX: %X\n", r->eax);
-    printf("EBX: %X\n", r->ebx);
-    printf("ECX: %X\n", r->ecx);
-    printf("EDX: %X\n", r->edx);
-    printf("ESi: %X\n", r->esi);
-    printf("EDI: %X\n", r->edi);
-    printf("\nStack: %X:%X\n", r->ebp, r->esp);
-    printf("EIP: %X\n", r->eip);
+
+    if ( r != NULL ) {
+        printf("EAX: %X\n", r->eax);
+        printf("EBX: %X\n", r->ebx);
+        printf("ECX: %X\n", r->ecx);
+        printf("EDX: %X\n", r->edx);
+        printf("ESi: %X\n", r->esi);
+        printf("EDI: %X\n", r->edi);
+        printf("\nStack: %X:%X\n", r->ebp, r->esp);
+        printf("EIP: %X\n", r->eip);
+    }
 
     for ( ;; ) {}
 }
