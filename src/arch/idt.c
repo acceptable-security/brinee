@@ -47,5 +47,5 @@ void idt_install() {
         idt_set_gate(i, (unsigned) idt_empty_entry, 0x08, 0x8E);
     }
 
-    __asm__ ( "lidt (%0)" : : "g"(idtp) );
+    __asm__ volatile ( "lidt %0" : : "g"(idtp) );
 }

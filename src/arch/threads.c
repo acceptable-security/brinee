@@ -84,7 +84,7 @@ void threads_killcurrent() {
 	free((void *)currentProcess->stacktop);
 	free(currentProcess);
 
-	pfree((void*) currentProcess->cr3);
+	free((void*) currentProcess->cr3);
 
 	currentProcess->prev->next = currentProcess->next;
 	currentProcess->next->prev = currentProcess->prev;

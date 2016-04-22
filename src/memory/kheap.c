@@ -9,7 +9,7 @@ void* kmalloc(unsigned int amnt) {
     kheap_current += amnt;
 
     if ( kheap_current > kheap_end ) {
-        bsod("Ran out of physical memory for the kernel.", NULL
+        bsod("Ran out of physical memory for the kernel.", 0);
     }
 
     return mem;

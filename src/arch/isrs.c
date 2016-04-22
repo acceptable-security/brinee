@@ -15,7 +15,7 @@ void bsod(char* message, struct regs *r) {
 
     printf("PANIC: %s\n\n", message);
 
-    if ( r != NULL ) {
+    if ( r != 0 ) {
         printf("EAX: %X\n", r->eax);
         printf("EBX: %X\n", r->ebx);
         printf("ECX: %X\n", r->ecx);

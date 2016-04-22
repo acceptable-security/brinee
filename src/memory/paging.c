@@ -11,13 +11,17 @@ typedef struct page_t {
    uint32_t frame      : 20;  // Frame address (shifted right 12 bits)
 } page_t;
 
-typedef struct page_table_t {
-    page_t pages[1024];
-};
+typedef struct {
+    uint32_t pages[1024];
+} page_table_t;
 
-typedef struct page_directory_t {
-    page_table_t tables[1024];
-};
+typedef struct {
+    page_table_t* tables[1024];
+} page_directory_t;
+
+uint32_t paging_acquire_frame() {
+    return (uint32_t) kmalloc(4096); // How to handle during paging?
+}
 
 void paging_set_directory(page_directory_t* dir) {
     __asm__ volatile("mov %0, %%eax\n"
@@ -25,11 +29,11 @@ void paging_set_directory(page_directory_t* dir) {
                      : : "r"(&dir->tables));
 }
 
-void paging_release_page(page_directory_t_t* dir, void* addr) {
-    unsigned int table = addr >> 22;
-    unsigned int page = addr > 12 & 0x03FF;
+void paging_release_page(page_directory_t* dir, void* addr) {
+    unsigned int table = ((uint32_t) addr) >> 22;
+    unsigned int page = ((uint32_t) addr) >> 12 & 0x03FF;
 
-    if ( dir->tables[table] != NULL ) {
+    if ( dir->tables[table] != 0 ) {
         return;
     }
 
@@ -37,37 +41,37 @@ void paging_release_page(page_directory_t_t* dir, void* addr) {
 }
 
 void* paging_acquire_page(page_directory_t* dir, unsigned int access) {
-    if ( dir == NULL ) {
-        return NULL;
+    if ( dir == 0 ) {
+        return 0;
     }
 
     for ( int i = 0; i < 1023; i++ ) { // Ignore last, it has BOOGGERS
-        if (  dir->tables[i] != NULL ) {
+        if (  dir->tables[i] != 0 ) {
             for ( int j = 0; j < 1024; j++ ) {
-                if ( dir->tables[i]->pages[j] == NULL ) {
-                    dir->tables[i]->pages[j] = /* HUH */ | access;
-                    return dir->tables[i]->pages[j] & ~0xFFF;
+                if ( dir->tables[i]->pages[j] == 0 ) {
+                    dir->tables[i]->pages[j] = paging_acquire_frame() | access;
+                    return i << 22 | (j & 0x03FF) << 12;
                 }
             }
         }
         else {
             dir->tables[i] = (page_table_t*) kmalloc(sizeof(page_table_t));
             memset(dir->tables[i], 0, sizeof(page_table_t));
-            dir->tables[i]->pages[0] = /* IDEK */ | access;
-            return dir->tables[i]->pages[0] & ~0xFFF;
+            dir->tables[i]->pages[0] = paging_acquire_frame() | access;
+            return i << 22 | (0 & 0x03FF) << 12;
         }
     }
 
-    return NULL;
+    return 0;
 }
 
 page_directory_t* paging_new_directory() {
     page_directory_t* dir = (page_directory_t*) kmalloc(sizeof(page_directory_t));
     memset(dir, 0, sizeof(page_directory_t));
-    dir[1023] = (page_table_t*) kmalloc(sizeof(page_table_t));
+    dir->tables[1023] = (page_table_t*) kmalloc(sizeof(page_table_t));
 
     for ( int i = 0; i < 1024; i++ ) {
-        dir[1023][i] = (page_t)((i * 0x1000) | 0x3);
+        dir->tables[1023]->pages[i] = (uint32_t)((i * 0x1000) | 0x3);
     }
 
     return dir;
@@ -78,7 +82,7 @@ void paging_fault(struct regs* r) {
 }
 
 void paging_install(unsigned int* mem_end, unsigned int mem_size) {
-
+    page_directory_t* p = paging_new_directory();
 
     irq_install_handler(14, paging_fault);
 
@@ -88,5 +92,5 @@ void paging_install(unsigned int* mem_end, unsigned int mem_size) {
         			 "mov %%cr0, %%eax\n"
         			 "or $0x80000000, %%eax\n"
                      "mov %%eax, %%cr0\n"
-			         : : "r"(page_directory));
+			         : : "r"(&p->tables));
 }

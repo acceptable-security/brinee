@@ -45,7 +45,7 @@ void main(multiboot_info_t* multiboot, unsigned int magic) {
         return;
     }
 
-    memory_install(&_end);
+    paging_install(_end, 0x100000); // TODO
 
     // // INITIALIZE HEAP
     vbe_mode_info_t *vbe_mode_info = (vbe_mode_info_t *) multiboot->vbe_mode_info;

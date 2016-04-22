@@ -19,8 +19,8 @@ void outportl (unsigned short _port, unsigned long _data) {
 }
 
 unsigned short inportw (unsigned short _port) {
-    unsigned long rv;
-    __asm__ __volatile__ ("inw %1, %0" : "=a" (rv) : "dN" (_port));
+    unsigned short rv;
+    __asm__ __volatile__ ("inw %1, %0" : "=a" (rv) : "d" (_port));
     return rv;
 }
 

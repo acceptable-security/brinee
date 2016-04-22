@@ -6,7 +6,9 @@ tty_mode_t tty_mode;
 int vesa_x;
 int vesa_y;
 
-void puts(const char* str) {
+void putch(char c);
+
+void puts(char* str) {
     switch ( tty_mode ) {
         case MODE_VGA:
             vga_puts(str);
@@ -16,7 +18,7 @@ void puts(const char* str) {
             // Not using putstr, because tty handles newlines differently.
 
             for ( int i = 0; i < strlen(str); i++ ) {
-                putch(str[i]);
+                putch(((char) str[i]));
             }
             break;
     }
