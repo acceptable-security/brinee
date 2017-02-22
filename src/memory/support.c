@@ -1,4 +1,5 @@
 #include <memory/kmem.h>
+#include <memory/paging.h>
 
 void liballoc_lock() {
     __asm__ ("cli");
@@ -9,9 +10,10 @@ void liballoc_unlock() {
 }
 
 void* liballoc_alloc(int amt) {
-    return kmalloc(amt * 4096);
+    return page_alloc(amt);
 }
 
 extern int liballoc_free(void* page, int num) {
-    return 0; // TODO
+    page_free(page, num);
+    return 0;
 }

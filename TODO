@@ -1,29 +1,23 @@
-*TODO*
-
 Kernel revision 1:
-
-- ATA/SATA
-- ext2/4 or FAT32 or something
 - better memory allocation
-- more full standard library
-- better support for other platforms
-    - x86-64
-    - ARMv7
-- kernel API
+- full standard library
 - VESA/VBE
     - truefont loading?
     - png loading?
-- ELF File Loading
 - Actual syscalls
-- Interprocess communication
-- USB
-- Ethernet
-    - UDP
-    - TCP
-    - Tor?
 - RTC
 
 Kernel revision 2:
 
-- take out all file formatting systems
-- improve ability to work with linux standards while maintaining own
+- ATA/SATA
+- ext2/4 or FAT32 or something
+- kernel API
+- ELF File Loading
+- Interprocess communication
+
+Kernel revision 3:
+
+- Ethernet
+    - UDP
+    - TCP
+- USB

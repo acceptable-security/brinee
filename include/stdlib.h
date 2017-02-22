@@ -1,4 +1,4 @@
-typedef int size_t;
+#include <stdint.h>
 
 void *memcpy(void *dest, const void *src, size_t count);
 void *memset(void *dest, char val, size_t count);

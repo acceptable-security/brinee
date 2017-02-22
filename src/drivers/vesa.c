@@ -1,10 +1,11 @@
 #include <drivers/font.h>
 #include <drivers/vesa.h>
+#include <string.h>
 
 uint8_t* frame_buffer;
 vbe_mode_info_t* vbe_info;
 
-void vbe_putpixel(int x, int y, uint8_t r, uint8_t g, uint8_t b) {
+void vbe_putpixel(uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b) {
     uint8_t* ptr = frame_buffer + (y * vbe_info->pitch) + (x * (vbe_info->bpp / 8));
 
     ptr[0] = b & 255;
@@ -12,7 +13,7 @@ void vbe_putpixel(int x, int y, uint8_t r, uint8_t g, uint8_t b) {
     ptr[2] = r & 255;
 }
 
-void vbe_putrect(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b) {
+void vbe_putrect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint8_t r, uint8_t g, uint8_t b) {
     uint8_t* loc = frame_buffer + (y * vbe_info->pitch);
     int bpp = vbe_info->bpp / 8;
 
@@ -28,8 +29,8 @@ void vbe_putrect(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b) {
     }
 }
 
-void vbe_putchar(int x, int y, char c, uint8_t fr, uint8_t fg, uint8_t fb,
-                                       uint8_t br, uint8_t bg, uint8_t bb) {
+void vbe_putchar(uint32_t x, uint32_t y, uint8_t c, uint8_t fr, uint8_t fg, uint8_t fb,
+                                                    uint8_t br, uint8_t bg, uint8_t bb) {
     if ( c < 32 ) {
         return;
     }
@@ -48,10 +49,10 @@ void vbe_putchar(int x, int y, char c, uint8_t fr, uint8_t fg, uint8_t fb,
     }
 }
 
-void vbe_putstr(int x, int y, const char* str, uint8_t fr, uint8_t fg, uint8_t fb,
-                                               uint8_t br, uint8_t bg, uint8_t bb) {
-    int ox = x;
-    int cx = x;
+void vbe_putstr(uint32_t x, uint32_t y, const char* str, uint8_t fr, uint8_t fg, uint8_t fb,
+                                                         uint8_t br, uint8_t bg, uint8_t bb) {
+    uint32_t ox = x;
+    uint32_t cx = x;
 
     for ( int i = 0; i < strlen(str); i++ ) {
         if ( str[i] == '\n' ) {
@@ -70,23 +71,23 @@ void vbe_putstr(int x, int y, const char* str, uint8_t fr, uint8_t fg, uint8_t f
     }
 }
 
-int vbe_get_char_width() {
+uint32_t vbe_get_char_width() {
     return font_width;
 }
 
-int vbe_get_char_height() {
+uint32_t vbe_get_char_height() {
     return font_height;
 }
 
-int vbe_get_screen_width() {
+uint32_t vbe_get_screen_width() {
     return vbe_info->Xres;
 }
 
-int vbe_get_screen_height() {
+uint32_t vbe_get_screen_height() {
     return vbe_info->Yres;
 }
 
 void vbe_install(vbe_mode_info_t* vbe) {
-    frame_buffer = vbe->physbase;
+    frame_buffer = (uint8_t*) vbe->physbase;
     vbe_info = vbe;
 }

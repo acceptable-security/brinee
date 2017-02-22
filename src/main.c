@@ -19,16 +19,7 @@ extern void pit_install();
 extern void threads_install();
 extern void pci_install();
 extern void keyboard_install();
-
-extern void* _end; // end of the kernel
-// This is the most important part of kernel.
-// This is so vital to the computer
-// that if you don't have it
-// even if you are within a virtual machine
-// your entire computer will combust into an inferno of
-// hatred and doom. This is literally so important that
-// the National Security Agency declared it an enemey of
-// the state and has an active campaign against it.
+extern void kernel_heap_install(void* kern_end);
 
 char *flan[4] = {
     "   ______       ",
@@ -37,7 +28,26 @@ char *flan[4] = {
     "/__________\\   "
 };
 
-void main(multiboot_info_t* multiboot, unsigned int magic) {
+void detect_memory(multiboot_info_t* multiboot) {
+    memory_map_t* map = multiboot->mmap_addr;
+
+    printf("== GRUB Memory Map ==\n");
+    printf("Address  Length   Type\n");
+    while ( map < multiboot->mmap_addr + multiboot->mmap_length ) {
+        printf("%08x %08x %s\n", (map->base_addr_high << 4) | map->base_addr_low,
+                               (map->length_high << 4) | map->length_low,
+                               (map->type == 1 ? "USABLE" : "RESERVED"));
+    	map = (memory_map_t*) ((uintptr_t) map + map->size + sizeof(map->size));
+	}
+}
+
+void use_vesa(multiboot_info_t* multiboot) {
+    vbe_mode_info_t *vbe_mode_info = (vbe_mode_info_t *) multiboot->vbe_mode_info;
+    vbe_install(vbe_mode_info);
+    tty_init(MODE_VESA);
+}
+
+void main(multiboot_info_t* multiboot, unsigned int magic, void* _end) {
     if ( magic != 0x2BADB002 ) {
         vga_install();
         puts("Multiboot Signature Verification Failed!");
@@ -45,25 +55,44 @@ void main(multiboot_info_t* multiboot, unsigned int magic) {
         return;
     }
 
-    paging_install(_end, 0x100000); // TODO
+    vga_install();
+    tty_init(MODE_VGA);
 
-    // // INITIALIZE HEAP
-    vbe_mode_info_t *vbe_mode_info = (vbe_mode_info_t *) multiboot->vbe_mode_info;
-    vbe_install(vbe_mode_info);
-    tty_init(MODE_VESA);
+    detect_memory(multiboot);
 
-    // INTIALIZE INTERUPT SERVICES
+    printf("Address of main: %08x\n", (void*)main);
+    printf("End of kernel at %08x\n", _end);
+    printf("Multiboot info at %08x\n", multiboot);
+
+    printf("Initializing gdt...\n");
     gdt_install();
+
+    printf("Initializing idt...\n");
     idt_install();
+
+    printf("Initializing frames...\n");
+    kernel_heap_install(0x00100000);
+    frame_init(0x07ee0000 - 0x00100000);
+    printf("Initializing paging...\n");
+    paging_install(_end, 0x07ee0000 - 0x00100000); // TODO
+    printf("Switching kernel heaps...\n");
+    kernel_heap_switch();
+
+    printf("Initializing isrs...\n");
     isrs_install();
+
+    printf("Initializing irq...\n");
     irq_install();
+
+    printf("Initializing pit...\n");
     pit_install();
-    // ENABLE INTERRUPTS
+
+    printf("Enabling interrupts...\n");
 
     __asm__ volatile ("sti");
 
     printf("Multiboot Magic: 0x%x\n", magic);
-
+    printf("Beginning threads...\n");
     threads_install();
 
     puts("Uh, this shouldn't be here!");

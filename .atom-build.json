@@ -1,0 +1,4 @@
+{
+  "cmd": "make clean && make",
+  "sh": true
+}

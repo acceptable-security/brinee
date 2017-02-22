@@ -1,6 +1,7 @@
 #include <tty.h>
 #include <drivers/vga.h>
 #include <drivers/vesa.h>
+#include <string.h>
 
 tty_mode_t tty_mode;
 int vesa_x;
@@ -50,7 +51,7 @@ void putch(char c) {
             vbe_putchar(vesa_x, vesa_y, c, 255, 255, 255, HEX2RGB(0x496FD6));
             vesa_x += vbe_get_char_width();
 
-            if ( vesa_x >= vbe_get_screen_width ) {
+            if ( vesa_x >= vbe_get_screen_width() ) {
                 vesa_x = 15;
                 vesa_y += vbe_get_char_height();
             }

@@ -1,6 +1,6 @@
 ARCH = i386
 ASM = nasm
-CC = i386-elf-gcc
+CC = gcc
 
 DEFAULT_CFLAGS = -Wall -O -fstrength-reduce -fomit-frame-pointer -ffreestanding  -finline-functions -c -g -std=c11
 
